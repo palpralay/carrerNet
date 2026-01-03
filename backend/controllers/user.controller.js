@@ -1,7 +1,8 @@
 import User from "../models/user.model.js";
+import Profile from "../models/profile.model.js";
+import ConnectionRequest from "../models/connections.model.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import Profile from "../models/profile.model.js";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 
@@ -62,7 +63,11 @@ const convertUserDataToPDF = (profile) => {
 
       // Past Work Experience
       doc.fontSize(14).text("Past Work Experience", { underline: true });
-      if (profile.pastWork && Array.isArray(profile.pastWork) && profile.pastWork.length > 0) {
+      if (
+        profile.pastWork &&
+        Array.isArray(profile.pastWork) &&
+        profile.pastWork.length > 0
+      ) {
         profile.pastWork.forEach((work, index) => {
           doc.fontSize(12).text(`${index + 1}. ${work}`);
         });
@@ -73,7 +78,11 @@ const convertUserDataToPDF = (profile) => {
 
       // Education
       doc.fontSize(14).text("Education", { underline: true });
-      if (profile.education && Array.isArray(profile.education) && profile.education.length > 0) {
+      if (
+        profile.education &&
+        Array.isArray(profile.education) &&
+        profile.education.length > 0
+      ) {
         profile.education.forEach((edu, index) => {
           doc.fontSize(12).text(`${index + 1}. ${edu}`);
         });
@@ -290,7 +299,9 @@ export const getAllUserProfiles = async (req, res) => {
       "name username email profilePicture"
     );
     return res.status(200).json({ profiles });
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
 };
 
 //  |----------------------------------------------------------------------|
@@ -313,9 +324,7 @@ export const downloadProfile = async (req, res) => {
     const fileName = await convertUserDataToPDF(profile);
     const filePath = `uploads/${fileName}`;
 
-
     return res.download(filePath, "profile.pdf", (err) => {
-
       if (fs.existsSync(filePath)) {
         fs.unlink(filePath, (unlinkErr) => {
           if (unlinkErr) {
@@ -330,5 +339,192 @@ export const downloadProfile = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Failed to generate PDF" });
+  }
+};
+
+//  |----------------------------------------------------------------------|
+//  |                         send Connection Request                      |
+//  |----------------------------------------------------------------------|
+
+export const sendConnectionRequest = async (req, res) => {
+  try {
+    const user = req.user;
+    const { connectionID } = req.params;
+
+    //  Prevent self-connection
+    if (user._id.toString() === connectionID) {
+      return res
+        .status(400)
+        .json({ message: "You cannot connect with yourself" });
+    }
+
+    // Check target user exists
+    const connectionUser = await User.findById(connectionID);
+    if (!connectionUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if already connected
+    const alreadyConnected = await ConnectionRequest.findOne({
+      status_accepted: true,
+      $or: [
+        { userId: user._id, connectionId: connectionUser._id },
+        { userId: connectionUser._id, connectionId: user._id },
+      ],
+    });
+
+    if (alreadyConnected) {
+      return res.status(400).json({ message: "Already connected" });
+    }
+
+    //  Check existing request (same direction, pending or rejected)
+    const existingRequest = await ConnectionRequest.findOne({
+      userId: user._id,
+      connectionId: connectionUser._id,
+    });
+
+    if (existingRequest && existingRequest.status_accepted === null) {
+      return res
+        .status(400)
+        .json({ message: "Connection request already sent" });
+    }
+
+    if (existingRequest && existingRequest.status_accepted === false) {
+      // Resend after rejection
+      existingRequest.status_accepted = null;
+      await existingRequest.save();
+      return res
+        .status(200)
+        .json({ message: "Connection request resent successfully" });
+    }
+
+    //  Check reverse request
+    const reverseRequest = await ConnectionRequest.findOne({
+      userId: connectionUser._id,
+      connectionId: user._id,
+      status_accepted: null,
+    });
+
+    if (reverseRequest) {
+      return res.status(400).json({
+        message: "This user has already sent you a request",
+      });
+    }
+
+    //  Create request
+    const newConnectionRequest = new ConnectionRequest({
+      userId: user._id,
+      connectionId: connectionUser._id,
+      status_accepted: null,
+    });
+
+    await newConnectionRequest.save();
+
+    return res
+      .status(200)
+      .json({ message: "Connection request sent successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+//  |----------------------------------------------------------------------|
+//  |                      Requests I SENT (pending)                       |
+//  |----------------------------------------------------------------------|
+export const getMySentConnectionRequests = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const connections = await ConnectionRequest.find({
+      userId: userId,
+      status_accepted: null,
+    }).populate("connectionId", "name username email profilePicture");
+
+    return res.status(200).json({ connections });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+//  |----------------------------------------------------------------------|
+//  |                      Requests I RECEIVED (pending)                   |
+//  |----------------------------------------------------------------------|
+export const getMyReceivedConnectionRequests = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const connections = await ConnectionRequest.find({
+      connectionId: userId,
+      status_accepted: null,
+    }).populate("userId", "name username email profilePicture");
+
+    return res.status(200).json({ connections });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+//  |----------------------------------------------------------------------|
+//  |                      My ACCEPTED CONNECTIONS                         |
+//  |----------------------------------------------------------------------|
+
+export const whatAreMyConnections = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const connections = await ConnectionRequest.find({
+      status_accepted: true,
+      $or: [{ userId }, { connectionId: userId }],
+    })
+      .populate("userId", "name username email profilePicture")
+      .populate("connectionId", "name username email profilePicture");
+
+    const myConnections = connections.map((conn) => {
+      return conn.userId._id.toString() === userId.toString()
+        ? conn.connectionId
+        : conn.userId;
+    });
+
+    return res.status(200).json({ connections: myConnections });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+//  |----------------------------------------------------------------------|
+//  |                      response to connection request                  |
+//  |----------------------------------------------------------------------|
+
+export const respondToConnectionRequest = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { requestID, action } = req.params;
+
+    const connection = await ConnectionRequest.findById(requestID);
+    if (!connection) {
+      return res.status(404).json({ message: "Connection request not found" });
+    }
+
+    // Authorization check
+    if (connection.connectionId.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    if (action === "accept") {
+      connection.status_accepted = true;
+    } else if (action === "reject") {
+      connection.status_accepted = false;
+    } else {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+
+    await connection.save();
+
+    return res.status(200).json({
+      message: `Connection request ${action}ed successfully`,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
   }
 };

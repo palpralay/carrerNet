@@ -8,6 +8,11 @@ import {
   updateProfileData,
   getAllUserProfiles,
   downloadProfile,
+  sendConnectionRequest,
+  getMySentConnectionRequests,
+  getMyReceivedConnectionRequests,
+  whatAreMyConnections,
+  respondToConnectionRequest,
 } from "../controllers/user.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 import multer from "multer";
@@ -35,6 +40,11 @@ router.route("/get_user_and_profile").get(authenticate, getUserAndProfile);
 router.route("/update_profile_data").post(authenticate, updateProfileData);
 router.route("/get_all_users").get(authenticate, getAllUserProfiles);
 router.route("/user/download_resume").get(authenticate, downloadProfile);
+router.route("/user/send_connection_request/:connectionID").post(authenticate, sendConnectionRequest);
+router.route("/user/getConnectionRequests").get(authenticate, getMySentConnectionRequests); //
+router.route("/user/getReceivedRequests").get(authenticate, getMyReceivedConnectionRequests);
+router.route("/user/user_connection_request").get(authenticate, whatAreMyConnections);
+router.route("/user/accept_connection_request/:requestID/:action").post(authenticate, respondToConnectionRequest);
 
 
 export default router;
