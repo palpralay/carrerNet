@@ -1,0 +1,68 @@
+POST http://localhost:9000/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "testuser2",
+  "email": "test@example2.com",
+  "password": "password1234",
+  "name": "Test User2"
+}
+
+###
+POST http://localhost:9000/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+###
+GET http://localhost:9000/get_user_and_profile HTTP/1.1
+Authorization: Bearer 185f6113a15fa55e5558871c03367e2bfdbc7ba25c4081ed7c7abc576109ffad
+Content-Type: application/json
+
+###
+POST http://localhost:9000/update_profile_data HTTP/1.1
+Authorization: Bearer 185f6113a15fa55e5558871c03367e2bfdbc7ba25c4081ed7c7abc576109ffad
+Content-Type: application/json
+
+{
+  "bio": "Full-stack MERN developer passionate about building scalable web applications.",
+  "currentPost": "Software Engineer Intern",
+
+  "pastWork": [
+    {
+      "company": "TechNova Solutions",
+      "position": "Frontend Developer",
+      "years": "2023 - 2024"
+    },
+    {
+      "company": "CodeCraft Labs",
+      "position": "Backend Developer",
+      "years": "2022 - 2023"
+    }
+  ],
+
+  "education": [
+    {
+      "school": "Government College of Engineering and Leather Technology",
+      "degree": "Bachelors",
+      "fieldOfStudy": "Information Technology"
+    },
+    {
+      "school": "XYZ Polytechnic",
+      "degree": "Diploma",
+      "fieldOfStudy": "Electrical Engineering"
+    }
+  ]
+}
+
+###
+GET http://localhost:9000/get_all_users HTTP/1.1
+Authorization: Bearer 185f6113a15fa55e5558871c03367e2bfdbc7ba25c4081ed7c7abc576109ffad
+Content-Type: application/json
+
+###
+GET http://localhost:9000/user/download_resume
+Authorization: Bearer 6f1a34a14ec9989d3816d24a1be343b2368fc31971527d3cef039cbb002c264a
