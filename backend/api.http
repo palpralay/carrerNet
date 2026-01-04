@@ -2,10 +2,10 @@ POST http://localhost:9000/register HTTP/1.1
 Content-Type: application/json
 
 {
-  "username": "testuser2",
-  "email": "test@example2.com",
-  "password": "password1234",
-  "name": "Test User2"
+  "username": "user10",
+  "email": "user10@gmail.com",
+  "password": "user10",
+  "name": "Test User10"
 }
 
 ###
@@ -13,8 +13,8 @@ POST http://localhost:9000/login HTTP/1.1
 Content-Type: application/json
 
 {
-  "email": "test@example.com",
-  "password": "password123"
+  "email": "user10@gmail.com",
+  "password": "user10"
 }
 
 ###
@@ -66,3 +66,12 @@ Content-Type: application/json
 ###
 GET http://localhost:9000/user/download_resume
 Authorization: Bearer 6f1a34a14ec9989d3816d24a1be343b2368fc31971527d3cef039cbb002c264a
+
+###
+POST http://localhost:9000/post HTTP/1.1
+Authorization: Bearer b7c67aa5106d25948c86689bd2656bfdbfffd34e2bf151e54f265c27fa472cdd
+Content-Type: application/json
+
+{
+  "body": "This is my first post!"
+}
