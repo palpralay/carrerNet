@@ -8,18 +8,18 @@ export const LoginComponent = () => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    if (authState.loggedin) {
-      router.push("/dashboard");
-    }
-  });
+  // useEffect(() => {
+  //   if (authState.loggedin) {
+  //     router.push("/dashboard");
+  //   }
+  // }, [authState.loggedin, router]);
 
   return (
     <UserLayout>
       <div>
         
         <div>
-          <img src="/images/login.svg" alt="" />
+          {/* <img src="/images/login.svg" alt="" /> */}
         </div>
       </div>
     </UserLayout>
