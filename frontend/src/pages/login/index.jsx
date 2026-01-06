@@ -84,7 +84,7 @@ const LoginComponent = () => {
 
   return (
     <UserLayout>
-      <section className="h-full flex items-center justify-center px-4">
+      <section className="h-100vh mt-12  flex items-center justify-center px-4">
         <div
           className="max-w-5xl w-full grid grid-cols-1 bg-gradient-to-r from-blue-100 via-sky-300 to-cyan-100
             bg-[length:300%_300%] animate-gradient rounded-2xl p-8 lg:grid-cols-2 gap-10 items-center"

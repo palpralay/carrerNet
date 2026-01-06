@@ -1,5 +1,4 @@
 import Profile from "../models/profile.model.js";
-import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import Comment from "../models/comments.model.js";
 
@@ -91,10 +90,12 @@ export const commentOnPost = async (req, res) => {
     if (!post) {
       return res.status(400).json({ message: "Post not found" });
     }
+    
+    // FIXED: Changed from req.body.comment to req.body.body to match the model
     const comment = new Comment({
       userId: user._id,
       postId: postId,
-      comment: req.body.comment,
+      body: req.body.body || req.body.comment, // Support both for backwards compatibility
     });
 
     console.log("comment:", comment);
@@ -115,11 +116,15 @@ export const commentOnPost = async (req, res) => {
 export const getCommentsByPost = async (req, res) => {
   try {
     const postId = req.params.id;
-    const comments = await Comment.find({ postId: postId });
-    if (!comments) {
+    const comments = await Comment.find({ postId: postId }).populate(
+      "userId",
+      "name username email profilePicture"
+    );
+    
+    if (!comments || comments.length === 0) {
       return res
-        .status(400)
-        .json({ message: "No comments found for this post" });
+        .status(200)
+        .json({ message: "No comments found for this post", comments: [] });
     }
     return res.status(200).json({ comments });
   } catch (error) {
@@ -152,7 +157,7 @@ export const deleteComment = async (req, res) => {
 };
 
 //  |----------------------------------------------------------------------|
-//  |                       incriment like                                 |
+//  |                       increment like                                 |
 //  |----------------------------------------------------------------------|
 export const likePost = async (req, res) => {
   try {

@@ -7,7 +7,7 @@ const UserLayout = ({ children }) => {
     <div className="h-screen overflow-hidden">
       <Navbar />
 
-      <main className="h-[calc(100vh-64px)] overflow-hidden">
+      <main className="h-100vh overflow-auto pt-4 px-4">
         {children}
       </main>
 

@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser, logoutUser } from "../../action/authAction/index.js";
+import { loginUser, registerUser, logoutUser, getAboutUser } from "../../action/authAction/index.js";
 
 const initialState = {
   user: {},
+  profile: {},
   token: null,
   loggedIn: false,
   isError: false,
@@ -28,8 +29,10 @@ const authSlice = createSlice({
 
     clearAuth: () => initialState,
 
-    handleLoginUser: (state) => {
-      state.message = "hello";
+    setAuthFromStorage: (state, action) => {
+      // For loading auth from localStorage on mount
+      state.token = action.payload.token;
+      state.loggedIn = true;
     },
   },
 
@@ -47,8 +50,8 @@ const authSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.loggedIn = true;
-        state.token = action.payload.token || action.payload;
-        state.user = action.payload.user || action.payload;
+        state.token = action.payload.token;
+        state.user = action.payload.user || {};
         state.message = "Login successful";
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -57,6 +60,7 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.loggedIn = false;
         state.token = null;
+        state.user = {};
         state.message = action.payload || "Login failed";
       })
 
@@ -72,8 +76,8 @@ const authSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.loggedIn = true;
-        state.token = action.payload.token || action.payload;
-        state.user = action.payload.profile || action.payload.user;
+        state.token = action.payload.token;
+        state.user = action.payload.user || {};
         state.message = "Registration successful";
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -81,23 +85,42 @@ const authSlice = createSlice({
         state.isError = true;
         state.isSuccess = false;
         state.loggedIn = false;
+        state.token = null;
         state.message = action.payload || "Registration failed";
+      })
+
+      // GET ABOUT USER (Fetch full profile)
+      .addCase(getAboutUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getAboutUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.profileFetched = true;
+        state.user = action.payload.user || state.user;
+        state.profile = action.payload.profile || {};
+        state.isError = false;
+      })
+      .addCase(getAboutUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.profileFetched = false;
+        state.message = action.payload || "Failed to fetch user data";
       })
 
       // LOGOUT
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(logoutUser.fulfilled, (state) => {
+      .addCase(logoutUser.fulfilled, () => {
         // Reset to initial state on logout
         return initialState;
       })
-      .addCase(logoutUser.rejected, (state) => {
+      .addCase(logoutUser.rejected, () => {
         // Even if logout fails, clear the auth state
         return initialState;
       });
   },
 });
 
-export const { reset, clearAuth, handleLoginUser } = authSlice.actions;
+export const { reset, clearAuth, setAuthFromStorage } = authSlice.actions;
 export default authSlice.reducer;
