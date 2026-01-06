@@ -9,6 +9,7 @@ const initialState = {
   isError: false,
   isSuccess: false,
   isLoading: false,
+  // isTokenThere: false,
   message: "",
   profileFetched: false,
   connection: [],
@@ -26,6 +27,12 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.message = "";
     },
+    // setTokenIsThere: (state) => {
+    //   state.isTokenThere = true;
+    // },
+    // setTokenIsNotThere: (state) => {
+    //   state.isTokenThere = false;
+    // },
 
     clearAuth: () => initialState,
 

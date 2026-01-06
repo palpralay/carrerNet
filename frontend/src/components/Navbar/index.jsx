@@ -6,29 +6,29 @@ import { useState } from "react";
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
- 
+  const authState = useSelector((state) => state.auth);
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 bg-white relative">
-      {/* LOGO */}
+     
       <p
         onClick={() => router.push("/")}
-        className="text-2xl font-extrabold bg-gradient-to-r from-blue-800 via-sky-500 to-yellow-500 bg-clip-text text-transparent cursor-pointer"
-      >
+        className="text-2xl font-extrabold
+                    bg-gradient-to-r from-blue-800 via-sky-500 to-yellow-500
+                    bg-[length:300%_300%]
+                    bg-clip-text text-transparent
+                    animate-gradient cursor-pointer">
         CareerNet
       </p>
 
-      {/* DESKTOP MENU */}
       <div className="hidden sm:flex items-center gap-8">
-        {isAuthenticated ? (
+        {authState && (
           <p className="text-gray-700 font-medium">
             Welcome,{" "}
-            <span className="font-semibold">
-              {user?.name || user?.username || "User"}
-            </span>
+            <span className="font-semibold">{authState.user?.name}</span>
           </p>
-        ) : (
+        )}
+        {!authState && (
           <button
             onClick={() => router.push("/login")}
             className="px-8 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full"
@@ -57,12 +57,10 @@ const Navbar = () => {
           open ? "flex" : "hidden"
         } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col gap-3 px-5 sm:hidden`}
       >
-        {isAuthenticated ? (
+        {authState ? (
           <p className="text-gray-700 font-medium">
             Welcome,{" "}
-            <span className="font-semibold">
-              {user?.name || user?.username || "User"}
-            </span>
+            <span className="font-semibold">{authState.user?.name}</span>
           </p>
         ) : (
           <button
