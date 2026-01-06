@@ -19,7 +19,14 @@ const authSlice = createSlice({
   initialState,
 
   reducers: {
-    reset: () => initialState,
+    reset: (state) => {
+      state.isError = false;
+      state.isSuccess = false;
+      state.isLoading = false;
+      state.message = "";
+    },
+
+    clearAuth: () => initialState,
 
     handleLoginUser: (state) => {
       state.message = "hello";
@@ -31,6 +38,8 @@ const authSlice = createSlice({
       // LOGIN
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
         state.message = "Loading...";
       })
       .addCase(loginUser.fulfilled, (state, action) => {
@@ -38,37 +47,44 @@ const authSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.loggedIn = true;
-        state.token = action.payload;
+        state.token = action.payload.token || action.payload;
+        state.user = action.payload.user || action.payload;
         state.message = "Login successful";
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
+        state.loggedIn = false;
+        state.token = null;
         state.message = action.payload || "Login failed";
       })
 
-      // REGISTER
+      // REGISTER - AUTO LOGIN
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
         state.message = "Registering...";
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.loggedIn = true;
         state.isError = false;
-        state.user = action.payload;
+        state.loggedIn = true;
+        state.token = action.payload.token || action.payload;
+        state.user = action.payload.user || action.payload;
         state.message = "Registration successful";
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
+        state.loggedIn = false;
         state.message = action.payload || "Registration failed";
       });
   },
 });
 
-export const { reset, handleLoginUser } = authSlice.actions;
+export const { reset, clearAuth, handleLoginUser } = authSlice.actions;
 export default authSlice.reducer;

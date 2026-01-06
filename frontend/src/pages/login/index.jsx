@@ -1,19 +1,16 @@
 import UserLayout from "@/layouts/UserLayout";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import { loginUser, registerUser } from "@/redux/config/action/authAction";
+import { reset } from "@/redux/config/reducer/authReducer";
 import Image from "next/image";
 import { toast } from "sonner";
 
 const LoginComponent = () => {
   const authState = useSelector((state) => state.auth);
   const router = useRouter();
-
-
-
   const [state, setState] = useState("login");
-
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -21,9 +18,21 @@ const LoginComponent = () => {
     password: "",
   });
 
+  const hasProcessedSuccess = useRef(false);
   const dispatch = useDispatch();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if ((authState.loggedIn && authState.token) || token) {
+      router.push("/dashboard");
+    }
+  }, [authState.loggedIn, authState.token, router]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    hasProcessedSuccess.current = false;
+
     if (state === "login") {
       console.log("Login attempt:", formData);
       dispatch(loginUser(formData));
@@ -34,24 +43,28 @@ const LoginComponent = () => {
   };
 
   useEffect(() => {
-    if (authState.isSuccess && authState.loggedIn) {
-      toast.success("Login successful");
+    if (hasProcessedSuccess.current) return;
+
+    if (authState.isSuccess && authState.loggedIn && authState.token) {
+      hasProcessedSuccess.current = true;
+      
+      if (state === "login") {
+        toast.success("Login successful");
+      } else {
+        toast.success("Registration successful!");
+      }
+      
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 100);
     }
-    if (authState.isError) {
-      toast.error("Invalid username or password");
+
+    if (authState.isError && !hasProcessedSuccess.current) {
+      const errorMessage = authState.message || (state === "login" ? "Invalid Credentials" : "Registration failed");
+      toast.error(errorMessage);
     }
-  }, [
-    authState.isSuccess,
-    authState.isError,
-    authState.loggedIn,
-    authState.message,
-  ]);
-  
-  useEffect(() => {
-    if (authState.loggedIn || localStorage.getItem("token")) {
-      router.push("/dashboard");
-    }
-  }, [authState.loggedIn, router]);
+  }, [authState.isSuccess, authState.isError, authState.loggedIn, authState.token, state, router]);
+
   const handleToggleState = () => {
     setState(state === "login" ? "register" : "login");
     setFormData({
@@ -60,6 +73,8 @@ const LoginComponent = () => {
       email: "",
       password: "",
     });
+    hasProcessedSuccess.current = false;
+    dispatch(reset());
   };
 
   const handleChange = (e) => {
@@ -74,7 +89,6 @@ const LoginComponent = () => {
           className="max-w-5xl w-full grid grid-cols-1 bg-gradient-to-r from-blue-100 via-sky-300 to-cyan-100
             bg-[length:300%_300%] animate-gradient rounded-2xl p-8 lg:grid-cols-2 gap-10 items-center"
         >
-          {/* IMAGE */}
           <div className="hidden lg:flex justify-center">
             <Image
               src="/images/login.svg"
@@ -85,7 +99,6 @@ const LoginComponent = () => {
             />
           </div>
 
-          {/* FORM */}
           <form
             onSubmit={handleSubmit}
             className="w-full max-w-md mx-auto bg-blue-800-900 border border-blue-800 rounded-2xl px-8 py-10"
@@ -98,7 +111,6 @@ const LoginComponent = () => {
               Please sign in to continue
             </p>
 
-            {/* NAME & USERNAME */}
             {state !== "login" && (
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <div className="flex items-center bg-zinc-800-800 border border-zinc-800-700 h-12 rounded-full px-6 gap-2">
@@ -125,7 +137,7 @@ const LoginComponent = () => {
                 </div>
               </div>
             )}
-            {/* EMAIL */}
+
             <div className="flex items-center mt-4 bg-zinc-800-800 border border-zinc-800-700 h-12 rounded-full px-6 gap-2">
               <input
                 type="email"
@@ -138,7 +150,6 @@ const LoginComponent = () => {
               />
             </div>
 
-            {/* PASSWORD */}
             <div className="flex items-center mt-4 bg-zinc-800-800 border border-zinc-800-700 h-12 rounded-full px-6 gap-2">
               <input
                 type="password"
@@ -151,15 +162,14 @@ const LoginComponent = () => {
               />
             </div>
 
-            {/* SUBMIT */}
             <button
               type="submit"
-              className="mt-5 w-full h-11 rounded-full cursor-pointer bg-indigo-600 text-white hover:bg-indigo-500 transition"
+              disabled={authState.isLoading}
+              className="mt-5 w-full h-11 rounded-full cursor-pointer bg-indigo-600 text-white hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {state === "login" ? "Login" : "Sign up"}
+              {authState.isLoading ? "Processing..." : (state === "login" ? "Login" : "Sign up")}
             </button>
 
-            {/* TOGGLE */}
             <p
               onClick={handleToggleState}
               className="text-zinc-800-400 text-sm mt-4 text-center cursor-pointer"

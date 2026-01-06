@@ -1,7 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { clientServer } from "@/redux/config/index.jsx";
 
-
 export const loginUser = createAsyncThunk(
   "user/login",
   async (user, thunkAPI) => {
@@ -18,7 +17,7 @@ export const loginUser = createAsyncThunk(
       }
 
       localStorage.setItem("token", token);
-      return token;
+      return response.data; // Return full response
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Login failed"
@@ -38,8 +37,8 @@ export const registerUser = createAsyncThunk(
         password: user.password,
       });
 
+      // Store token after successful registration
       const token = response.data?.token;
-
       if (token) {
         localStorage.setItem("token", token);
       }
