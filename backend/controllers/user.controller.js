@@ -134,7 +134,15 @@ export const register = async (req, res) => {
       userId: newUser._id,
     });
 
-    return res.status(201).json({ message: "User registered successfully" });
+    // Generate token for auto-login
+    const token = crypto.randomBytes(32).toString("hex");
+    newUser.token = token;
+    await newUser.save();
+
+    return res.status(201).json({ 
+      message: "User registered successfully",
+      token 
+    });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
@@ -166,7 +174,16 @@ export const login = async (req, res) => {
     user.token = token;
     await user.save();
 
-    return res.status(200).json({ token });
+    return res.status(200).json({ 
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture
+      }
+    });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
@@ -529,6 +546,24 @@ export const respondToConnectionRequest = async (req, res) => {
     return res.status(200).json({
       message: `Connection request ${action}ed successfully`,
     });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+//  |----------------------------------------------------------------------|
+//  |                          User Logout                                 |
+//  |----------------------------------------------------------------------|
+
+export const logout = async (req, res) => {
+  try {
+    const user = req.user;
+    
+    // Clear the token from database
+    user.token = "";
+    await user.save();
+
+    return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   register,
   login,
+  logout,
   uploadProfilePicture,
   updateUserProfile,
   getUserAndProfile,
@@ -35,6 +36,7 @@ router
 
 router.route("/register").post(register);
 router.route("/login").post(login);
+router.route("/logout").post(authenticate, logout);
 router.route("/user_update").post(authenticate, updateUserProfile);
 router.route("/get_user_and_profile").get(authenticate, getUserAndProfile);
 router.route("/update_profile_data").post(authenticate, updateProfileData);

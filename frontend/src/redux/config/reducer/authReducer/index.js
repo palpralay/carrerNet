@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser } from "../../action/authAction/index.js";
+import { loginUser, registerUser, logoutUser } from "../../action/authAction/index.js";
 
 const initialState = {
   user: {},
@@ -73,7 +73,7 @@ const authSlice = createSlice({
         state.isError = false;
         state.loggedIn = true;
         state.token = action.payload.token || action.payload;
-        state.user = action.payload.user || action.payload;
+        state.user = action.payload.profile || action.payload.user;
         state.message = "Registration successful";
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -82,6 +82,19 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.loggedIn = false;
         state.message = action.payload || "Registration failed";
+      })
+
+      // LOGOUT
+      .addCase(logoutUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        // Reset to initial state on logout
+        return initialState;
+      })
+      .addCase(logoutUser.rejected, (state) => {
+        // Even if logout fails, clear the auth state
+        return initialState;
       });
   },
 });

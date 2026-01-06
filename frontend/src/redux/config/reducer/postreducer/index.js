@@ -1,74 +1,47 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser } from "../authReducer/index.js";
+import { getAllPosts } from "../../action/postAction/index.js";
 
 const initialState = {
-  user: {},
-  token: null,
-  loggedIn: false,
-  isError: false,
-  isSuccess: false,
-  isLoading: false,
-  message: "",
-  profileFetched: false,
-  connection: [],
-  connectionRequest: [],
+  posts: [],
+  isError:false,
+  postFetch:false,
+  isLoading:false,
+  message:"",
+  comment:[],
+  postId:"",
 };
 
-const authSlice = createSlice({
-  name: "auth",
+const postSlice = createSlice({
+  name: "post",
   initialState,
 
   reducers: {
     reset: () => initialState,
-
-    handleLoginUser: (state) => {
-      state.message = "hello";
-    },
+    resetPostId: (state) => {
+      state.postId = "";
+    }
   },
 
   extraReducers: (builder) => {
     builder
-        // LOGIN
-      .addCase(loginUser.pending, (state) => {
+      .addCase(getAllPosts.pending, (state) => {
         state.isLoading = true;
-        state.message = "Loading...";
+        state.postFetch = false;
+        state.message = "fetching all posts...";
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(getAllPosts.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = true;
-        state.isError = false;
-        state.loggedIn = true;
-        state.token = action.payload;
-        state.message = "Login successful";
+        state.postFetch = true;
+        state.postFetch = true;
+        state.posts = action.payload.posts;
       })
-      .addCase(loginUser.rejected, (state, action) => {
+      .addCase(getAllPosts.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.isSuccess = false;
-        state.message = action.payload || "Login failed";
-      })
-
-      // REGISTER
-      .addCase(registerUser.pending, (state) => {
-        state.isLoading = true;
-        state.message = "Registering...";
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.loggedIn = true;
-        state.isError = false;
-        state.user = action.payload;
-        state.message = "Registration successful";
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.isSuccess = false;
-        state.message = action.payload || "Registration failed";
+        state.message = action.payload;
       });
   },
 });
 
-export const { reset, handleLoginUser } = authSlice.actions;
-export default authSlice.reducer;
+export const { reset, resetPostId } = postSlice.actions;
+export default postSlice.reducer;

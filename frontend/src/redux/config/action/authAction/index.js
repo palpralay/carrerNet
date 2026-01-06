@@ -52,4 +52,54 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const getAboutUser = createAsyncThunk(
+  "user/getAboutUser",
+  async (user, thunkAPI) => {
+    try {
+      const response = await clientServer.get("/get_user_and_profile",{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      
+      return thunkAPI.fulfillWithValue(response.data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch user data");
+    }
+  });
+
+
+
+
+
+
+export const logoutUser = createAsyncThunk(
+  "user/logout",
+  async (_, thunkAPI) => {
+    try {
+      const state = thunkAPI.getState();
+      const token = state.auth?.token || localStorage.getItem("token");
+
+      if (token) {
+        await clientServer.post("/logout", {}, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      // Clear token from localStorage regardless of API call success
+      localStorage.removeItem("token");
+      
+      return { message: "Logged out successfully" };
+    } catch (error) {
+      // Clear token even if API call fails
+      localStorage.removeItem("token");
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Logout failed"
+      );
+    }
+  }
+);
+
 export default clientServer;
