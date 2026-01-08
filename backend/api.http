@@ -17,6 +17,9 @@ Content-Type: application/json
   "password": "user10"
 }
 
+
+
+
 ###
 GET http://localhost:9000/get_user_and_profile HTTP/1.1
 Authorization: Bearer bcddd6b232678390cfb901332d8338f97ecaef45f839d099c4329ede15642e81

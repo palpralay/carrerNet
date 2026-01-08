@@ -40,7 +40,7 @@ router.route("/logout").post(authenticate, logout);
 router.route("/user_update").post(authenticate, updateUserProfile);
 router.route("/get_user_and_profile").get(authenticate, getUserAndProfile);
 router.route("/update_profile_data").post(authenticate, updateProfileData);
-router.route("/get_all_users").get(authenticate, getAllUserProfiles);
+router.route("/user/get_all_users").get(authenticate, getAllUserProfiles);
 router.route("/user/download_resume").get(authenticate, downloadProfile);
 router.route("/user/send_connection_request/:connectionID").post(authenticate, sendConnectionRequest);
 router.route("/user/getConnectionRequests").get(authenticate, getMySentConnectionRequests); //

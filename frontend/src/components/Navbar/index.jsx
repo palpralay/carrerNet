@@ -1,12 +1,32 @@
 import { useRouter } from "next/router";
-import React from "react";
-import { useSelector } from "react-redux";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { logoutUser, getAboutUser } from "@/redux/config/action/authAction";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth);
+  
+  // Check if user is actually logged in (from Redux or localStorage)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const hasToken = !!(authState.loggedIn || authState.token || token);
+    setIsLoggedIn(hasToken);
+
+    // Fetch user data if logged in but user data not loaded
+    if (hasToken && !authState.user?.name && !authState.isLoading) {
+      dispatch(getAboutUser({ token }));
+    }
+  }, [authState.loggedIn, authState.token, authState.user, authState.isLoading, dispatch]);
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    router.push("/login");
+  };
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 bg-white relative">
@@ -22,16 +42,24 @@ const Navbar = () => {
       </p>
 
       <div className="hidden sm:flex items-center gap-8">
-        {authState && (
-          <p className="text-gray-700 font-medium">
-            Welcome,{" "}
-            <span className="font-semibold">{authState.user?.name}</span>
-          </p>
+        {isLoggedIn && authState.user?.name && (
+          <>
+            <p className="text-gray-700 font-medium">
+              Welcome,{" "}
+              <span className="font-semibold">{authState.user.name}</span>
+            </p>
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2 border-red-500 text-black cursor-pointer  rounded-full transition"
+            >
+              Logout
+            </button>
+          </>
         )}
-        {!authState && (
+        {!isLoggedIn && (
           <button
             onClick={() => router.push("/login")}
-            className="px-8 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full"
+            className="px-8 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full transition"
           >
             Login
           </button>
@@ -55,17 +83,25 @@ const Navbar = () => {
       <div
         className={`${
           open ? "flex" : "hidden"
-        } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col gap-3 px-5 sm:hidden`}
+        } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col gap-3 px-5 sm:hidden z-50`}
       >
-        {authState ? (
-          <p className="text-gray-700 font-medium">
-            Welcome,{" "}
-            <span className="font-semibold">{authState.user?.name}</span>
-          </p>
+        {isLoggedIn && authState.user?.name ? (
+          <>
+            <p className="text-gray-700 font-medium">
+              Welcome,{" "}
+              <span className="font-semibold">{authState.user.name}</span>
+            </p>
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm transition"
+            >
+              Logout
+            </button>
+          </>
         ) : (
           <button
             onClick={() => router.push("/login")}
-            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full text-sm"
+            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full text-sm transition"
           >
             Login
           </button>

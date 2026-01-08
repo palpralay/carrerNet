@@ -30,7 +30,7 @@ app.use(userRoutes);
 //-----connect to MongoDB and start the server-----------
 const start = async () => {
   const connectDB = await mongoose.connect(
-    "mongodb+srv://pralaypal111_db_user:WrV3j7ENMGgVBGBz@cluster0.v3jrqk9.mongodb.net/carrernet"
+    "mongodb+srv://pralaypal111_db_user:oUzuEkuScIEStk5z@cluster0.eez6q0b.mongodb.net/?appName=Cluster0"
   );
   console.log("Connected to MongoDB");
   app.listen(9000, () => {
