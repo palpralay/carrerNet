@@ -1,10 +1,11 @@
 import { useRouter } from "next/router";
 import React from "react";
+import { useSelector } from "react-redux";
 
 const DashboardLayout = ({ children }) => {
   const router = useRouter();
   const isActive = (path) => router.pathname === path;
-
+  const authState = useSelector((state) => state.auth);
   return (
     <div className="container">
       <div className="home ">
@@ -69,6 +70,7 @@ const DashboardLayout = ({ children }) => {
             className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition duration-200 ease-out hover:scale-105 hover:bg-gray-100 hover:text-indigo-600 ${
               isActive("/myconnections") ? "bg-indigo-100 text-indigo-600 font-semibold" : ""
             }`}
+            
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -85,12 +87,15 @@ const DashboardLayout = ({ children }) => {
               />
             </svg>
             <p className="text-base font-medium">Connections</p>
+            
           </div>
+
+
         </div>
 
         <div className="ml-80">{children}</div>
         <div className="right-0 top-20 fixed w-64 p-4">
-            <h3>top profiles</h3>
+          <h1>{authState.user.name}</h1>
         </div>
       </div>
     </div>
