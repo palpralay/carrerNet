@@ -22,10 +22,19 @@ app.get("/", (req, res) => {
 app.use(postsRoutes);
 app.use(userRoutes);
 
+// Global error handler - must be after all routes
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err : {}
+  });
+});
 
-
-
-
+// 404 handler - must be after all routes
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
 
 //-----connect to MongoDB and start the server-----------
 const start = async () => {

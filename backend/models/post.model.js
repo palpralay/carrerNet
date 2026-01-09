@@ -8,12 +8,20 @@ const postSchema = new mongoose.Schema({
   },
   body: {
     type: String,
-    required: true,
+    required: false,
+    default: "",
   },
   likes: {
     type: Number,
     default: 0,
   },
+  likedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: [],
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

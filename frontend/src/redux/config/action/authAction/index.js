@@ -111,7 +111,6 @@ export const logoutUser = createAsyncThunk(
 
       // Clear token from localStorage regardless of API call success
       localStorage.removeItem("token");
-      
       return { message: "Logged out successfully" };
     } catch (error) {
       // Clear token even if API call fails

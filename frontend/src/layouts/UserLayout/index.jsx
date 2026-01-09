@@ -4,10 +4,10 @@ import { Toaster } from "sonner";
 
 const UserLayout = ({ children }) => {
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden">
       <Navbar />
 
-      <main className="h-100vh overflow-auto pt-4 px-4">
+      <main className="flex-1 overflow-hidden bg-gray-50">
         {children}
       </main>
 
