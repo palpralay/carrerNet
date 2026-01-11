@@ -78,8 +78,10 @@ export const getAboutUser = createAsyncThunk(
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
+        console.log('getAllUsers API response:', response.data);
         return response.data;
       } catch (error) {
+        console.log('getAllUsers API error:', error.response?.data);
         return thunkAPI.rejectWithValue(
           error.response?.data?.message || "Failed to fetch all user profiles"
         );

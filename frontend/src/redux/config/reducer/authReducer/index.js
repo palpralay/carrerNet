@@ -15,6 +15,7 @@ const initialState = {
   connection: [],
   connectionRequest: [],
   all_profile_fetched: false,
+  allUsers: [],
 };
 
 const authSlice = createSlice({
@@ -114,11 +115,18 @@ const authSlice = createSlice({
         state.profileFetched = false;
         state.message = action.payload || "Failed to fetch user data";
       })
+      .addCase(getAllUsers.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+      })
       .addCase(getAllUsers.fulfilled, (state, action) => {
+        console.log('Reducer - getAllUsers payload:', action.payload);
+        console.log('Reducer - profiles array:', action.payload.profiles);
         state.isLoading = false;
         state.isError = false;
-        state.allUsers = action.payload.profile || [];
+        state.allUsers = action.payload.profiles || [];
         state.all_profile_fetched = true;
+        console.log('Reducer - allUsers stored:', state.allUsers);
       })
       .addCase(getAllUsers.rejected, (state, action) => {
         state.isLoading = false;
