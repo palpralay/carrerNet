@@ -14,6 +14,7 @@ import {
   getMyReceivedConnectionRequests,
   whatAreMyConnections,
   respondToConnectionRequest,
+  getUserProfileByUsername,
 } from "../controllers/user.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 import multer from "multer";
@@ -47,6 +48,6 @@ router.route("/user/getConnectionRequests").get(authenticate, getMySentConnectio
 router.route("/user/getReceivedRequests").get(authenticate, getMyReceivedConnectionRequests);
 router.route("/user/user_connection_request").get(authenticate, whatAreMyConnections);
 router.route("/user/accept_connection_request/:requestID/:action").post(authenticate, respondToConnectionRequest);
-
+router.route("/user/getUserProfileByUsername/:username").get(authenticate, getUserProfileByUsername);
 
 export default router;

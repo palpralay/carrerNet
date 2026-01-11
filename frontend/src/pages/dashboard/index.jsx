@@ -203,11 +203,11 @@ const Dashboard = () => {
                   authState.user?.profilePicture &&
                   authState.user.profilePicture !== "default.jpg"
                     ? `${BASE_URL}/${authState.user.profilePicture}`
-                    : "/images/default-avatar.svg"
+                    : "/images/avatar.png"
                 }
                 alt="profile"
                 onError={(e) => {
-                  e.target.src = "/images/default-avatar.svg";
+                  e.target.src = "/images/avatar.png";
                 }}
               />
 
@@ -348,12 +348,12 @@ const Dashboard = () => {
                           post.userId?.profilePicture &&
                           post.userId.profilePicture !== "default.jpg"
                             ? `${BASE_URL}/${post.userId.profilePicture}`
-                            : "/images/default-avatar.svg"
+                            : "/images/avatar.png"
                         }
                         alt="Author"
                         className="h-12 w-12 rounded-full object-cover"
                         onError={(e) => {
-                          e.target.src = "/images/default-avatar.svg";
+                          e.target.src = "/images/avatar.png";
                         }}
                       />
                       <div className="ml-3">
@@ -559,12 +559,12 @@ const Dashboard = () => {
                             postComment.userId?.profilePicture &&
                             postComment.userId.profilePicture !== "default.jpg"
                               ? `${BASE_URL}/${postComment.userId.profilePicture}`
-                              : "/images/default-avatar.svg"
+                              : "/images/avatar.png"
                           }
                           alt="Commenter"
                           className="h-8 w-8 rounded-full object-cover flex-shrink-0"
                           onError={(e) => {
-                            e.target.src = "/images/default-avatar.svg";
+                            e.target.src = "/images/avatar.png";
                           }}
                         />
                         <div className="flex-1">

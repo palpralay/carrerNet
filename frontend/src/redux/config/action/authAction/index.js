@@ -17,6 +17,8 @@ export const loginUser = createAsyncThunk(
       }
 
       localStorage.setItem("token", token);
+      // Also set cookie for SSR
+      document.cookie = `token=${token}; path=/; max-age=86400`; // 1 day
       return response.data; // Return full response
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -41,6 +43,8 @@ export const registerUser = createAsyncThunk(
       const token = response.data?.token;
       if (token) {
         localStorage.setItem("token", token);
+        // Also set cookie for SSR
+        document.cookie = `token=${token}; path=/; max-age=86400`; // 1 day
       }
 
       return response.data;

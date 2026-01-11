@@ -568,3 +568,29 @@ export const logout = async (req, res) => {
     return res.status(500).json({ message: "Server Error" });
   }
 };
+
+//  |----------------------------------------------------------------------|
+//  |                    get user profile based on username                |
+//  |----------------------------------------------------------------------|
+
+export const getUserProfileByUsername = async (req, res) => {
+  try {
+
+    const { username } = req.params;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const userProfile = await Profile.findOne({ userId: user._id }).populate(
+      "userId",
+      "name username email profilePicture"
+    )
+
+
+    return res.status(200).json({ user: user, profile: userProfile });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}

@@ -51,7 +51,6 @@ export const getAllPosts = async (req, res) => {
       .populate("userId", "name username email profilePicture")
       .sort({ createdAt: -1 }); // Sort by newest first
 
-    console.log("Fetched posts:", posts?.length || 0);
     return res.status(200).json({ posts: posts || [] });
   } catch (error) {
     console.error("Error fetching posts:", error);
