@@ -15,15 +15,15 @@ const DebugToken = () => {
     
     // Get from cookies
     const allCookies = document.cookie;
-    console.log("🔍 All cookies:", allCookies);
+    console.log("All cookies:", allCookies);
     
     const cookieToken = allCookies
       .split('; ')
       .find(row => row.startsWith('token='))
       ?.split('=')[1];
 
-    console.log("🔍 Cookie token found:", !!cookieToken);
-    console.log("🔍 LocalStorage token found:", !!localToken);
+    console.log("Cookie token found:", !!cookieToken);
+    console.log("LocalStorage token found:", !!localToken);
 
     setTokenInfo({
       localStorage: localToken,
@@ -69,7 +69,7 @@ const DebugToken = () => {
     expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
     document.cookie = `token=${token};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
     
-    console.log("🍪 Manually set cookie");
+    console.log("Manually set cookie");
     
     // Refresh display
     setTimeout(() => {

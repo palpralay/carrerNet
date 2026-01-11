@@ -231,7 +231,10 @@ const Dashboard = () => {
                       className="max-h-40 rounded-lg border border-gray-300"
                     />
                     <button
-                      onClick={removeFile}
+                      onClick={() => {
+                        removeFile();
+                        router.dispatch(getAllPosts());
+                      }}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                     >
                       <svg
@@ -476,11 +479,11 @@ const Dashboard = () => {
 
                     <div
                       onClick={() => {
-                        console.log("🔍 Opening comments for post:", post._id);
+                        console.log("Opening comments for post:", post._id);
                         setCommentsVisibleForPost(post._id);
                         dispatch(getComments(post._id)).then((result) => {
-                          console.log("📝 Comments fetched:", result);
-                          console.log("📝 Comments payload:", result.payload);
+                          console.log("Comments fetched:", result);
+                          console.log("Comments payload:", result.payload);
                         });
                       }}
                     >
@@ -599,7 +602,7 @@ const Dashboard = () => {
                         return;
                       }
                       
-                      console.log("💬 Adding comment to postId:", commentsVisibleForPost, "with text:", comment);
+                      console.log("Adding comment to postId:", commentsVisibleForPost, "with text:", comment);
                       
                       const addResult = await dispatch(
                         addComment({
@@ -608,13 +611,13 @@ const Dashboard = () => {
                         })
                       );
                       
-                      console.log("💬 Add comment result:", addResult);
+                      console.log("Add comment result:", addResult);
                       
                       setComment("");
                       
                       const commentsResult = await dispatch(getComments(commentsVisibleForPost));
-                      console.log("📝 Get comments result:", commentsResult);
-                      console.log("📝 Current postState.comments:", postState.comments);
+                      console.log("Get comments result:", commentsResult);
+                      console.log("Current postState.comments:", postState.comments);
                     }}
                     className="bg-blue-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-full 
                       text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed

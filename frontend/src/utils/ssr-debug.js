@@ -79,9 +79,9 @@ export const safeCookies = {
  */
 export const debugHydration = (componentName, data) => {
   if (isClient) {
-    console.log(`🔍 [${componentName}] Client-side data:`, data);
+    console.log(`[${componentName}] Client-side data:`, data);
   } else {
-    console.log(`🔍 [${componentName}] Server-side data:`, data);
+    console.log(`[${componentName}] Server-side data:`, data);
   }
 };
 
@@ -114,7 +114,7 @@ export const createAuthHeaders = (token) => {
  * Log SSR errors with context
  */
 export const logSSRError = (location, error) => {
-  console.error(`❌ SSR Error in ${location}:`, {
+  console.error(` SSR Error in ${location}:`, {
     message: error.message,
     status: error.response?.status,
     data: error.response?.data,

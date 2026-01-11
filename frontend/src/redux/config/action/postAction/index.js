@@ -156,12 +156,12 @@ export const getComments = createAsyncThunk(
         },
       });
       
-      console.log("🔍 Backend response for getComments:", response.data);
+      console.log("Backend response for getComments:", response.data);
       
       // Handle different possible response structures
       let comments = response.data.comments || response.data.comment || response.data || [];
       
-      console.log("📝 Extracted comments:", comments);
+      console.log("Extracted comments:", comments);
       
       return thunkAPI.fulfillWithValue({
         comments: comments,
