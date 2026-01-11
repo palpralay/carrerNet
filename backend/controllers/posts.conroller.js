@@ -17,7 +17,9 @@ export const createPost = async (req, res) => {
   try {
     // Allow posts with either text body OR media (or both)
     if (!req.body.body && !req.file) {
-      return res.status(400).json({ message: "Post must contain text or media" });
+      return res
+        .status(400)
+        .json({ message: "Post must contain text or media" });
     }
     const profile = await Profile.findOne({ userId: user._id });
     if (!profile) {
@@ -33,7 +35,9 @@ export const createPost = async (req, res) => {
     return res.status(201).json({ message: "Post created successfully", post });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Server Error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server Error", error: error.message });
   }
 };
 
@@ -46,12 +50,14 @@ export const getAllPosts = async (req, res) => {
     const posts = await Post.find()
       .populate("userId", "name username email profilePicture")
       .sort({ createdAt: -1 }); // Sort by newest first
-    
+
     console.log("Fetched posts:", posts?.length || 0);
     return res.status(200).json({ posts: posts || [] });
   } catch (error) {
     console.error("Error fetching posts:", error);
-    return res.status(500).json({ message: "Server Error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server Error", error: error.message });
   }
 };
 
@@ -91,7 +97,7 @@ export const commentOnPost = async (req, res) => {
     if (!post) {
       return res.status(400).json({ message: "Post not found" });
     }
-    
+
     // FIXED: Changed from req.body.comment to req.body.body to match the model
     const comment = new Comment({
       userId: user._id,
@@ -121,13 +127,13 @@ export const getCommentsByPost = async (req, res) => {
       "userId",
       "name username email profilePicture"
     );
-    
+
     if (!comments || comments.length === 0) {
       return res
         .status(200)
         .json({ message: "No comments found for this post", comments: [] });
     }
-    return res.status(200).json({ comments });
+    return res.status(200).json(comments.reverse());
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -166,7 +172,7 @@ export const likePost = async (req, res) => {
     const userId = req.user._id || req.user.id;
 
     const post = await Post.findById(id);
-    
+
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -177,31 +183,37 @@ export const likePost = async (req, res) => {
     }
 
     // Check if user already liked the post
-    const hasLiked = post.likedBy.some(id => id.toString() === userId.toString());
-    
+    const hasLiked = post.likedBy.some(
+      (id) => id.toString() === userId.toString()
+    );
+
     if (hasLiked) {
       // Unlike the post
       post.likes = Math.max(0, post.likes - 1);
-      post.likedBy = post.likedBy.filter(id => id.toString() !== userId.toString());
+      post.likedBy = post.likedBy.filter(
+        (id) => id.toString() !== userId.toString()
+      );
       await post.save();
-      return res.status(200).json({ 
-        message: "Post unliked", 
-        post, 
-        liked: false 
+      return res.status(200).json({
+        message: "Post unliked",
+        post,
+        liked: false,
       });
     } else {
       // Like the post
       post.likes = (post.likes || 0) + 1;
       post.likedBy.push(userId);
       await post.save();
-      return res.status(200).json({ 
-        message: "Post liked", 
-        post, 
-        liked: true 
+      return res.status(200).json({
+        message: "Post liked",
+        post,
+        liked: true,
       });
     }
   } catch (error) {
     console.error("Error in likePost:", error);
-    return res.status(500).json({ message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getAllPosts, createPost, deletePost, getComments } from "../../action/postAction/index.js";
+import { getAllPosts, createPost, deletePost, getComments, addComment } from "../../action/postAction/index.js";
 
 const initialState = {
   posts: [],
@@ -7,7 +7,7 @@ const initialState = {
   postFetch: false,
   isLoading: false,
   message: "",
-  comment: [],
+  comments: [],
   postId: "",
   postCreated: false,
 };
@@ -91,9 +91,28 @@ const postSlice = createSlice({
         state.isError = true;
         state.message = action.payload || "Failed to delete post";
       })
+      
+      // GET COMMENTS
       .addCase(getComments.fulfilled, (state, action) => {
         state.postId = action.payload.postId;
-        // state.comment = action.payload.comments;
+        state.comments = action.payload.comments;
+      })
+      
+      // ADD COMMENT
+      .addCase(addComment.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.message = "Adding comment...";
+      })
+      .addCase(addComment.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.message = "Comment added successfully";
+      })
+      .addCase(addComment.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload || "Failed to add comment";
       })
   }
 });

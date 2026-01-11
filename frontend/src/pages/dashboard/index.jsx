@@ -19,7 +19,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 const Dashboard = () => {
-  const router = useRouter();
   const authState = useSelector((state) => state.auth);
   const [isChecking, setIsChecking] = useState(true);
   const dispatch = useDispatch();
@@ -31,6 +30,7 @@ const Dashboard = () => {
   const [commentsVisibleForPost, setCommentsVisibleForPost] = useState(null);
   const [comment, setComment] = useState("");
 
+  
   // Initial load
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -180,6 +180,7 @@ const Dashboard = () => {
       }
     }
   };
+    const router = useRouter();
 
   console.log("Posts state:", postState);
   console.log("Posts array:", postState.posts);
@@ -475,8 +476,12 @@ const Dashboard = () => {
 
                     <div
                       onClick={() => {
+                        console.log("🔍 Opening comments for post:", post._id);
                         setCommentsVisibleForPost(post._id);
-                        dispatch(getComments(post._id));
+                        dispatch(getComments(post._id)).then((result) => {
+                          console.log("📝 Comments fetched:", result);
+                          console.log("📝 Comments payload:", result.payload);
+                        });
                       }}
                     >
                       <svg
@@ -531,12 +536,15 @@ const Dashboard = () => {
             >
               {/* Comments Header */}
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-800">Comments</h2>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Comments
+                </h2>
               </div>
 
               {/* Comments List - Scrollable */}
               <div className="flex-1 overflow-y-auto px-6 py-4">
-                {postState.comment.length === 0 ? (
+                
+                {!postState.comments || postState.comments.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-gray-500 text-sm md:text-base">
                       No comments yet. Be the first to comment!
@@ -544,7 +552,31 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Comment items will go here */}
+                    {postState.comments.map((postComment, index) => (
+                      <div key={index} className="flex gap-3 pb-4 border-b border-gray-100 last:border-0">
+                        <img 
+                          src={
+                            postComment.userId?.profilePicture &&
+                            postComment.userId.profilePicture !== "default.jpg"
+                              ? `${BASE_URL}/${postComment.userId.profilePicture}`
+                              : "/images/default-avatar.svg"
+                          }
+                          alt="Commenter"
+                          className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+                          onError={(e) => {
+                            e.target.src = "/images/default-avatar.svg";
+                          }}
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900 text-sm">
+                            {postComment.userId?.name || "Unknown User"}
+                          </p>
+                          <p className="text-gray-700 text-sm mt-1">
+                            {postComment.body}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -561,11 +593,29 @@ const Dashboard = () => {
                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <button
-                  onClick={async()=>{
-                     await dispatch(addComment({ postId: commentsVisibleForPost, commentText: comment }));
+                    onClick={async () => {
+                      if (!comment.trim()) {
+                        toast.error("Please enter a comment");
+                        return;
+                      }
+                      
+                      console.log("💬 Adding comment to postId:", commentsVisibleForPost, "with text:", comment);
+                      
+                      const addResult = await dispatch(
+                        addComment({
+                          postId: commentsVisibleForPost,
+                          commentText: comment,
+                        })
+                      );
+                      
+                      console.log("💬 Add comment result:", addResult);
+                      
                       setComment("");
-                      await dispatch(getComments(commentsVisibleForPost));
-                  }}
+                      
+                      const commentsResult = await dispatch(getComments(commentsVisibleForPost));
+                      console.log("📝 Get comments result:", commentsResult);
+                      console.log("📝 Current postState.comments:", postState.comments);
+                    }}
                     className="bg-blue-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-full 
                       text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed
                       flex-shrink-0"

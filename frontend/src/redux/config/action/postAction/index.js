@@ -155,8 +155,16 @@ export const getComments = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       });
+      
+      console.log("🔍 Backend response for getComments:", response.data);
+      
+      // Handle different possible response structures
+      let comments = response.data.comments || response.data.comment || response.data || [];
+      
+      console.log("📝 Extracted comments:", comments);
+      
       return thunkAPI.fulfillWithValue({
-        comments: response.data.comments,
+        comments: comments,
         postId: postId,
       });
     } catch (error) {
