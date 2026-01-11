@@ -1,66 +1,68 @@
+/* eslint-disable @next/next/no-img-element */
 // frontend/src/pages/viewProfile/[username].jsx
+// COMPLETE SSR SOLUTION - Replace entire file with this
 
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import UserLayout from '@/layouts/UserLayout';
 import DashboardLayout from '@/layouts/dashboardLayout';
-import { clientServer, BASE_URL } from '@/redux/config';
+import { BASE_URL } from '@/redux/config';
 import { useSelector } from 'react-redux';
 
-const ViewProfile = () => {
+const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
   const router = useRouter();
   const { username } = router.query;
   const authState = useSelector((state) => state.auth);
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [profileData, setProfileData] = useState(initialProfileData);
+  const [loading, setLoading] = useState(!initialProfileData);
+  const [error, setError] = useState(ssrError);
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token && !authState.token) {
-      router.push('/login');
-      return;
-    }
+    // If SSR failed to load data, try client-side as fallback
+    if (!profileData && !loading && username) {
+      const fetchProfile = async () => {
+        try {
+          setLoading(true);
+          const token = localStorage.getItem('token');
 
-    if (!username) return;
-
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-
-        console.log("🔍 Fetching profile for:", username);
-        console.log("🔍 Using token:", token?.substring(0, 20) + "...");
-
-        const response = await clientServer.get(
-          `/user/getUserProfileByUsername/${username}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+          if (!token) {
+            router.push('/login');
+            return;
           }
-        );
 
-        console.log("✅ Profile fetched successfully");
-        setProfileData(response.data.profile);
-        setError(null);
-      } catch (err) {
-        console.error('❌ Error fetching profile:', err);
-        
-        if (err.response?.status === 401) {
-          localStorage.removeItem('token');
-          router.push('/login');
-        } else {
-          setError(err.response?.data?.message || 'Failed to load profile');
+          const response = await fetch(
+            `${BASE_URL}/user/getUserProfileByUsername/${username}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (!response.ok) {
+            if (response.status === 401) {
+              localStorage.removeItem('token');
+              router.push('/login');
+              return;
+            }
+            throw new Error('Failed to load profile');
+          }
+
+          const data = await response.json();
+          setProfileData(data.profile);
+          setError(null);
+        } catch (err) {
+          console.error('❌ Error fetching profile:', err);
+          setError(err.message || 'Failed to load profile');
+        } finally {
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchProfile();
-  }, [username, router, authState.token]);
+      fetchProfile();
+    }
+  }, [username, profileData, loading, router]);
 
   if (loading) {
     return (
@@ -68,7 +70,9 @@ const ViewProfile = () => {
         <DashboardLayout>
           <div className="flex flex-col items-center justify-center h-full py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
-            <p className="text-gray-600 text-lg">Loading profile...</p>
+            <p className="text-gray-600 text-lg">
+              {ssrMode ? 'Loading from server...' : 'Loading profile...'}
+            </p>
           </div>
         </DashboardLayout>
       </UserLayout>
@@ -123,6 +127,13 @@ const ViewProfile = () => {
     <UserLayout>
       <DashboardLayout>
         <div className="space-y-6">
+          {/* SSR Debug Badge */}
+          {ssrMode && (
+            <div className="bg-green-100 border border-green-300 rounded-lg px-4 py-2 text-sm text-green-800">
+              ✅ This page was rendered using Server-Side Rendering (SSR)
+            </div>
+          )}
+
           {/* Back Button */}
           <button
             onClick={() => router.back()}
@@ -300,7 +311,7 @@ const ViewProfile = () => {
               </div>
             )}
 
-            {/* Connect Button - if viewing someone else's profile */}
+            {/* Connect Button */}
             {authState.user?.username !== username && (
               <div className="mt-8 pt-6 border-t border-gray-200">
                 <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-full font-semibold transition">
@@ -314,5 +325,106 @@ const ViewProfile = () => {
     </UserLayout>
   );
 };
+
+export async function getServerSideProps(context) {
+  console.log("🚀 SSR: getServerSideProps called for username:", context.params.username);
+  
+  try {
+    // Parse cookies from request header
+    const cookieHeader = context.req.headers.cookie || '';
+    console.log("🍪 SSR: Raw cookie header length:", cookieHeader.length);
+    console.log("🍪 SSR: Raw cookie preview:", cookieHeader.substring(0, 150) + "...");
+    
+    const cookies = {};
+    cookieHeader.split(';').forEach(cookie => {
+      const parts = cookie.trim().split('=');
+      if (parts.length >= 2) {
+        const name = parts[0];
+        const value = parts.slice(1).join('='); // Handle values with = in them
+        cookies[name] = value; // Don't decode yet, keep original
+      }
+    });
+
+    console.log("🍪 SSR: All cookie names found:", Object.keys(cookies));
+    
+    const token = cookies.token;
+    console.log("🔑 SSR: Token found:", token ? `YES (${token.length} chars)` : "NO");
+    
+    if (token) {
+      console.log("🔑 SSR: Token first 30 chars:", token.substring(0, 30) + "...");
+      console.log("🔑 SSR: Token last 30 chars:", "..." + token.substring(token.length - 30));
+    }
+    
+    if (!token) {
+      console.log("❌ SSR: No token, redirecting to login");
+      return {
+        redirect: {
+          destination: '/login',
+          permanent: false,
+        },
+      };
+    }
+
+    const username = context.params.username;
+    const apiUrl = `http://localhost:9000/user/getUserProfileByUsername/${username}`;
+    
+    console.log("📡 SSR: Fetching from:", apiUrl);
+    console.log("📡 SSR: Using token:", token.substring(0, 20) + "...");
+
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log("📡 SSR: Response status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ SSR: API error:", response.status, errorText);
+      
+      if (response.status === 401) {
+        return {
+          redirect: {
+            destination: '/login',
+            permanent: false,
+          },
+        };
+      }
+
+      return {
+        props: {
+          initialProfileData: null,
+          ssrError: `Failed to load profile (${response.status})`,
+          ssrMode: false,
+        }
+      };
+    }
+
+    const data = await response.json();
+    console.log("✅ SSR: Profile loaded successfully");
+
+    return {
+      props: {
+        initialProfileData: data.profile || null,
+        ssrError: null,
+        ssrMode: true, // Flag to show SSR badge
+      }
+    };
+  } catch (error) {
+    console.error("❌ SSR: Exception:", error.message);
+    
+    // Return props with error instead of failing completely
+    return {
+      props: {
+        initialProfileData: null,
+        ssrError: error.message || 'Failed to load profile',
+        ssrMode: false,
+      }
+    };
+  }
+}
 
 export default ViewProfile;

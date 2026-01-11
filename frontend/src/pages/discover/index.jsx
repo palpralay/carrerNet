@@ -108,10 +108,11 @@ const Discover = () => {
 
                     {/* Connect Button */}
                     <button
-                      onClick={() =>
-                        router.push(
+                      onClick={() => {
+                        return router.push(
                           `/viewProfile/${profile.userId?.username}`
                         )
+                      }
                       }
                       className="w-full mt-2 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition"
                     >
