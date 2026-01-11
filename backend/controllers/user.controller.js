@@ -573,24 +573,38 @@ export const logout = async (req, res) => {
 //  |                    get user profile based on username                |
 //  |----------------------------------------------------------------------|
 
+
 export const getUserProfileByUsername = async (req, res) => {
   try {
+    console.log("📋 getUserProfileByUsername called");
+    console.log("📋 Authenticated user:", req.user?.username);
+    console.log("📋 Requested username:", req.params.username);
 
     const { username } = req.params;
 
     const user = await User.findOne({ username });
+    
     if (!user) {
+      console.log("❌ User not found:", username);
       return res.status(404).json({ message: "User not found" });
     }
+    
+    console.log("✅ User found:", user.username);
+    
     const userProfile = await Profile.findOne({ userId: user._id }).populate(
       "userId",
       "name username email profilePicture"
-    )
+    );
 
+    if (!userProfile) {
+      console.log("❌ Profile not found for user:", username);
+      return res.status(404).json({ message: "Profile not found" });
+    }
 
+    console.log("✅ Profile found and returning");
     return res.status(200).json({ user: user, profile: userProfile });
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error in getUserProfileByUsername:", error);
     return res.status(500).json({ message: "Server Error" });
   }
-}
+};

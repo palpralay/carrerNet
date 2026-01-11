@@ -1,93 +1,318 @@
-import { clientServer } from '@/redux/config';
-import React from 'react'
+// frontend/src/pages/viewProfile/[username].jsx
 
-const ViewProfile = ({ profileData }) => {
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import UserLayout from '@/layouts/UserLayout';
+import DashboardLayout from '@/layouts/dashboardLayout';
+import { clientServer, BASE_URL } from '@/redux/config';
+import { useSelector } from 'react-redux';
+
+const ViewProfile = () => {
+  const router = useRouter();
+  const { username } = router.query;
+  const authState = useSelector((state) => state.auth);
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token && !authState.token) {
+      router.push('/login');
+      return;
+    }
+
+    if (!username) return;
+
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+
+        console.log("🔍 Fetching profile for:", username);
+        console.log("🔍 Using token:", token?.substring(0, 20) + "...");
+
+        const response = await clientServer.get(
+          `/user/getUserProfileByUsername/${username}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        console.log("✅ Profile fetched successfully");
+        setProfileData(response.data.profile);
+        setError(null);
+      } catch (err) {
+        console.error('❌ Error fetching profile:', err);
+        
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          router.push('/login');
+        } else {
+          setError(err.response?.data?.message || 'Failed to load profile');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [username, router, authState.token]);
+
+  if (loading) {
+    return (
+      <UserLayout>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center h-full py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading profile...</p>
+          </div>
+        </DashboardLayout>
+      </UserLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <UserLayout>
+        <DashboardLayout>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-16 h-16 mx-auto text-red-500 mb-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+              />
+            </svg>
+            <p className="text-red-600 font-semibold text-lg">{error}</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full"
+            >
+              Go Back
+            </button>
+          </div>
+        </DashboardLayout>
+      </UserLayout>
+    );
+  }
 
   if (!profileData) {
-    return <div>Loading...</div>
+    return (
+      <UserLayout>
+        <DashboardLayout>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+            <p className="text-yellow-600 font-semibold">Profile not found</p>
+          </div>
+        </DashboardLayout>
+      </UserLayout>
+    );
   }
 
   return (
-    <div>
-      <h1>{profileData.userId.name}</h1>
-      <p>@{profileData.userId.username}</p>
-      <p>{profileData.userId.email}</p>
-      {profileData.bio && <p>{profileData.bio}</p>}
-      {profileData.currentPost && <p>Current Position: {profileData.currentPost}</p>}
-    </div>
-  )
-}
+    <UserLayout>
+      <DashboardLayout>
+        <div className="space-y-6">
+          {/* Back Button */}
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+              />
+            </svg>
+            <span className="font-medium">Back</span>
+          </button>
 
-export default ViewProfile
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8">
+            {/* Profile Picture */}
+            <div className="flex justify-center mb-6">
+              <img
+                src={
+                  profileData.userId?.profilePicture &&
+                  profileData.userId.profilePicture !== "default.jpg"
+                    ? `${BASE_URL}/${profileData.userId.profilePicture}`
+                    : "/images/avatar.png"
+                }
+                alt={profileData.userId?.name || "User"}
+                className="h-32 w-32 rounded-full object-cover border-4 border-indigo-100 shadow-lg"
+                onError={(e) => {
+                  e.target.src = "/images/avatar.png";
+                }}
+              />
+            </div>
 
-export async function getServerSideProps(context) {
-  console.log("=== DEBUG START ===");
-  console.log("Full context:", JSON.stringify(context.params, null, 2));
-  console.log("Username from params:", context.params?.username);
-  console.log("All Cookies:", context.req.cookies);
-  
-  try {
-    // Get token from cookies
-    const token = context.req.cookies.token;
-    console.log("Token found:", token ? "YES" : "NO");
-    console.log("Token value (first 20 chars):", token ? token.substring(0, 20) : "N/A");
-    console.log("Token length:", token ? token.length : 0);
-    
-    if (!token) {
-      console.log("No token - redirecting to login");
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
-    
-    const url = `/user/getUserProfileByUsername/${context.params.username}`;
-    console.log("Making request to:", url);
-    console.log("Authorization header:", `Bearer ${token.substring(0, 20)}...`);
-    
-    // First, test if token is valid by checking current user
-    console.log("Testing token validity...");
-    try {
-      const testRequest = await clientServer.get('/get_user_and_profile', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      console.log("Token is valid! User:", testRequest.data.user.username);
-    } catch (testError) {
-      console.error("Token validation failed:", testError.response?.data);
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
-    
-    const request = await clientServer.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    
-    const reqData = await request.data;
-    console.log("Response data:", reqData);
-    console.log("Profile data:", reqData.profile);
-    
-    return {
-      props: {
-        profileData: reqData.profile
-      }
-    };
-  } catch (error) {
-    console.error("=== ERROR ===");
-    console.error("Error message:", error.message);
-    console.error("Error response:", error.response?.data);
-    console.error("Error status:", error.response?.status);
-    return {
-      notFound: true
-    };
-  }
-}
+            {/* User Info */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {profileData.userId?.name}
+              </h1>
+              <p className="text-lg text-gray-500 mb-1">
+                @{profileData.userId?.username}
+              </p>
+              <p className="text-sm text-gray-400">{profileData.userId?.email}</p>
+            </div>
+
+            {/* Current Position */}
+            {profileData.currentPost && (
+              <div className="mb-6 pb-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 text-indigo-600"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                    />
+                  </svg>
+                  Current Position
+                </h2>
+                <p className="text-gray-700 text-lg">{profileData.currentPost}</p>
+              </div>
+            )}
+
+            {/* Bio */}
+            {profileData.bio && (
+              <div className="mb-6 pb-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 text-indigo-600"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                    />
+                  </svg>
+                  About
+                </h2>
+                <p className="text-gray-700 leading-relaxed">{profileData.bio}</p>
+              </div>
+            )}
+
+            {/* Past Work */}
+            {profileData.pastWork && profileData.pastWork.length > 0 && (
+              <div className="mb-6 pb-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 text-indigo-600"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                    />
+                  </svg>
+                  Work Experience
+                </h2>
+                <div className="space-y-4">
+                  {profileData.pastWork.map((work, index) => (
+                    <div
+                      key={index}
+                      className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-5 border border-indigo-100 hover:shadow-md transition"
+                    >
+                      <p className="font-semibold text-gray-900 text-lg mb-1">
+                        {work.position}
+                      </p>
+                      <p className="text-gray-700 mb-1">{work.company}</p>
+                      {work.years && (
+                        <p className="text-sm text-gray-500">{work.years}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Education */}
+            {profileData.education && profileData.education.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 text-indigo-600"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"
+                    />
+                  </svg>
+                  Education
+                </h2>
+                <div className="space-y-4">
+                  {profileData.education.map((edu, index) => (
+                    <div
+                      key={index}
+                      className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-5 border border-blue-100 hover:shadow-md transition"
+                    >
+                      <p className="font-semibold text-gray-900 text-lg mb-1">
+                        {edu.school}
+                      </p>
+                      <p className="text-gray-700 mb-1">{edu.degree}</p>
+                      {edu.fieldOfStudy && (
+                        <p className="text-sm text-gray-500">{edu.fieldOfStudy}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Connect Button - if viewing someone else's profile */}
+            {authState.user?.username !== username && (
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-full font-semibold transition">
+                  Connect with {profileData.userId?.name?.split(' ')[0]}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </DashboardLayout>
+    </UserLayout>
+  );
+};
+
+export default ViewProfile;
