@@ -203,54 +203,6 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
     }
   };
 
-  const handleDownloadResume = async () => {
-    if (!profileData?._id) {
-      toast.error("Profile data not available");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Please login to download resume");
-      router.push("/login");
-      return;
-    }
-
-    setDownloadingResume(true);
-
-    try {
-      const response = await clientServer.get(
-        `/user/download_resume?id=${profileData._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response?.data?.fileURL) {
-        window.open(`${BASE_URL}/${response.data.fileURL}`, "_blank");
-        toast.success("Opening resume...");
-      } else {
-        toast.error("Resume file not found");
-      }
-    } catch (error) {
-      console.error("Error downloading resume:", error);
-      
-      if (error.response?.status === 401) {
-        toast.error("Session expired. Please login again");
-        localStorage.removeItem("token");
-        router.push("/login");
-      } else {
-        toast.error(
-          error.response?.data?.message || "Failed to download resume"
-        );
-      }
-    } finally {
-      setDownloadingResume(false);
-    }
-  };
-
   // Render connection button
   const renderConnectionButton = () => {
     if (connectionStatus.isMe) {
@@ -462,33 +414,6 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
               @{profileData.userId?.username}
             </p>
             
-            <div
-              onClick={handleDownloadResume}
-              className={`flex justify-center gap-2 hover:scale-105 cursor-pointer items-center transition-all
-                ${downloadingResume ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <p className="text-indigo-600 font-medium">
-                {downloadingResume 
-                  ? "Downloading..." 
-                  : connectionStatus.isMe 
-                  ? "Download Your Resume" 
-                  : "Download Resume"}
-              </p>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className={`size-6 text-indigo-600 ${downloadingResume ? 'animate-bounce' : ''}`}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                />
-              </svg>
-            </div>
           </div>
 
           {/* Connection Button */}

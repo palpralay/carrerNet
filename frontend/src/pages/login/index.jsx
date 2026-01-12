@@ -48,6 +48,9 @@ const LoginComponent = () => {
     if (authState.isSuccess && authState.loggedIn && authState.token) {
       hasProcessedSuccess.current = true;
       
+      console.log('Auth success - redirecting to dashboard');
+      console.log('Token exists:', !!authState.token);
+      
       if (state === "login") {
         toast.success("Login successful");
       } else {
@@ -61,9 +64,10 @@ const LoginComponent = () => {
 
     if (authState.isError && !hasProcessedSuccess.current) {
       const errorMessage = authState.message || (state === "login" ? "Invalid Credentials" : "Registration failed");
+      console.error('Auth error:', errorMessage);
       toast.error(errorMessage);
     }
-  }, [authState.isSuccess, authState.isError, authState.loggedIn, authState.token, state, router]);
+  }, [authState.isSuccess, authState.isError, authState.loggedIn, authState.token, authState.message, state, router]);
 
   const handleToggleState = () => {
     setState(state === "login" ? "register" : "login");

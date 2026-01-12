@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { store } from "../redux/config/store";
 import { useEffect } from "react";
 import { setAuthFromStorage } from "@/redux/config/reducer/authReducer";
+import { Toaster } from "sonner";
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
@@ -19,6 +20,7 @@ export default function App({ Component, pageProps }) {
 
   return (
     <Provider store={store}>
+      <Toaster position="top-right" richColors />
       <Component {...pageProps} />
     </Provider>
   );

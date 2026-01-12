@@ -154,25 +154,33 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    console.log('Login request received:', { email: req.body.email });
+    
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('User not found:', email);
       return res.status(404).json({ message: "User does not exist" });
     }
 
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
+      console.log('Invalid password for user:', email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const token = crypto.randomBytes(32).toString("hex");
     user.token = token;
     await user.save();
+    
+    console.log('Login successful for user:', email);
+    console.log('Token generated (first 20 chars):', token.substring(0, 20) + '...');
 
     return res.status(200).json({ 
       token,
@@ -185,6 +193,7 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Login error:', error);
     return res.status(500).json({ message: "Server Error" });
   }
 };
@@ -330,39 +339,39 @@ export const getAllUserProfiles = async (req, res) => {
 //  |                         download Resume                              |
 //  |----------------------------------------------------------------------|
 
-export const downloadProfile = async (req, res) => {
-  try {
-    const userId = req.user._id;
+// export const downloadProfile = async (req, res) => {
+//   try {
+//     const userId = req.user._id;
 
-    const profile = await Profile.findOne({ userId }).populate(
-      "userId",
-      "name username email profilePicture"
-    );
+//     const profile = await Profile.findOne({ userId }).populate(
+//       "userId",
+//       "name username email profilePicture"
+//     );
 
-    if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
-    }
+//     if (!profile) {
+//       return res.status(404).json({ message: "Profile not found" });
+//     }
 
-    const fileName = await convertUserDataToPDF(profile);
-    const filePath = `uploads/${fileName}`;
+//     const fileName = await convertUserDataToPDF(profile);
+//     const filePath = `uploads/${fileName}`;
 
-    return res.download(filePath, "profile.pdf", (err) => {
-      if (fs.existsSync(filePath)) {
-        fs.unlink(filePath, (unlinkErr) => {
-          if (unlinkErr) {
-            console.error("Failed to delete temporary PDF:", unlinkErr);
-          }
-        });
-      }
-      if (err) {
-        console.error("Download error:", err);
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Failed to generate PDF" });
-  }
-};
+//     return res.download(filePath, "profile.pdf", (err) => {
+//       if (fs.existsSync(filePath)) {
+//         fs.unlink(filePath, (unlinkErr) => {
+//           if (unlinkErr) {
+//             console.error("Failed to delete temporary PDF:", unlinkErr);
+//           }
+//         });
+//       }
+//       if (err) {
+//         console.error("Download error:", err);
+//       }
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Failed to generate PDF" });
+//   }
+// };
 
 //  |----------------------------------------------------------------------|
 //  |                         send Connection Request                      |
