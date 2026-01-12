@@ -51,8 +51,10 @@ const authSlice = createSlice({
 
     setAuthFromStorage: (state, action) => {
       // For loading auth from localStorage on mount
-      state.token = action.payload.token;
-      state.loggedIn = true;
+      if (action.payload.token) {
+        state.token = action.payload.token;
+        state.loggedIn = true;
+      }
     },
   },
 
@@ -73,6 +75,10 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.user = action.payload.user || {};
         state.message = "Login successful";
+        // Force sync with localStorage immediately
+        if (state.token && typeof window !== 'undefined') {
+          localStorage.setItem('token', state.token);
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -99,6 +105,10 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.user = action.payload.user || {};
         state.message = "Registration successful";
+        // Force sync with localStorage immediately
+        if (state.token && typeof window !== 'undefined') {
+          localStorage.setItem('token', state.token);
+        }
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -134,8 +144,8 @@ const authSlice = createSlice({
         state.isError = false;
       })
       .addCase(getAllUsers.fulfilled, (state, action) => {
-        console.log('Reducer - getAllUsers payload:', action.payload);
-        console.log('Reducer - profiles array:', action.payload.profiles);
+        // console.log('Reducer - getAllUsers payload:', action.payload);
+        // console.log('Reducer - profiles array:', action.payload.profiles);
         state.isLoading = false;
         state.isError = false;
         state.allUsers = action.payload.profiles || [];

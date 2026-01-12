@@ -9,10 +9,10 @@ import {
   getAllPosts,
   getCommentsByPost,
   likePost,
-} from "../controllers/posts.conroller.js";
+} from "../controllers/posts.controller.js";
 import { authenticate as authMiddleware } from "../middleware/auth.middleware.js";
 
-import { activeCheck } from "../controllers/posts.conroller.js";
+import { activeCheck } from "../controllers/posts.controller.js";
 
 const router = Router();
 

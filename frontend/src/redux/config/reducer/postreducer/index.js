@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getAllPosts, createPost, deletePost, getComments, addComment } from "../../action/postAction/index.js";
+import { getAllPosts, createPost, deletePost, getComments, addComment, incrementLike } from "../../action/postAction/index.js";
 
 const initialState = {
   posts: [],
@@ -113,6 +113,19 @@ const postSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload || "Failed to add comment";
+      })
+
+      // INCREMENT LIKE
+      .addCase(incrementLike.fulfilled, (state, action) => {
+        // Optimistically update the liked post in the array
+        if (action.payload.post) {
+          const index = state.posts.findIndex(p => p._id === action.payload.post._id);
+          if (index !== -1) {
+            // Update likes count and likedBy array
+            state.posts[index].likes = action.payload.post.likes;
+            state.posts[index].likedBy = action.payload.post.likedBy; 
+          }
+        }
       })
   }
 });

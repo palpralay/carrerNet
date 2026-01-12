@@ -21,16 +21,9 @@ const LoginComponent = () => {
   const hasProcessedSuccess = useRef(false);
   const dispatch = useDispatch();
 
-  // Redirect if already logged in
-  useEffect(() => {
-    // Only redirect if both Redux state and localStorage are in sync
-    if (authState.loggedIn && authState.token && !authState.isLoading) {
-      router.replace("/dashboard");
-    }
-  }, [authState.loggedIn, authState.token, authState.isLoading, router]);
-
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Reset hasProcessedSuccess ref to allow new login attempts
     hasProcessedSuccess.current = false;
 
     if (state === "login") {
@@ -42,14 +35,18 @@ const LoginComponent = () => {
     }
   };
 
+  // Redirect if already logged in - Only on initial mount
   useEffect(() => {
-    if (hasProcessedSuccess.current) return;
+    const token = localStorage.getItem("token");
+    if (token || authState.loggedIn) {
+      router.replace("/dashboard");
+    }
+  }, [router, authState.loggedIn]); // Run only once
 
+  // Listen for login success from Redux state changes
+  useEffect(() => {
     if (authState.isSuccess && authState.loggedIn && authState.token) {
-      hasProcessedSuccess.current = true;
-      
       console.log('Auth success - redirecting to dashboard');
-      console.log('Token exists:', !!authState.token);
       
       if (state === "login") {
         toast.success("Login successful");
@@ -57,17 +54,22 @@ const LoginComponent = () => {
         toast.success("Registration successful!");
       }
       
+      // Small delay to ensure state and cookies are set
       setTimeout(() => {
         router.replace("/dashboard");
       }, 100);
+      
+      // Reset success state to prevent loop
+      // Don't reset immediately or it might flick back to login
     }
 
-    if (authState.isError && !hasProcessedSuccess.current) {
+    if (authState.isError) {
       const errorMessage = authState.message || (state === "login" ? "Invalid Credentials" : "Registration failed");
       console.error('Auth error:', errorMessage);
       toast.error(errorMessage);
+      dispatch(reset()); // Reset error state so user can try again cleanly
     }
-  }, [authState.isSuccess, authState.isError, authState.loggedIn, authState.token, authState.message, state, router]);
+  }, [authState.isSuccess, authState.isError, authState.loggedIn, authState.token, router, state, dispatch, authState.message]);
 
   const handleToggleState = () => {
     setState(state === "login" ? "register" : "login");

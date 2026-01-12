@@ -46,12 +46,17 @@ app.use((req, res) => {
 
 //-----connect to MongoDB and start the server-----------
 const start = async () => {
-  const connectDB = await mongoose.connect(
-    "mongodb+srv://pralaypal111_db_user:oUzuEkuScIEStk5z@cluster0.eez6q0b.mongodb.net/?appName=Cluster0"
-  );
-  console.log("Connected to MongoDB");
-  app.listen(9000, () => {
-    console.log("Server is running on port 9000");
-  });
+  try {
+    const connectDB = await mongoose.connect(
+      "mongodb+srv://pralaypal111_db_user:oUzuEkuScIEStk5z@cluster0.eez6q0b.mongodb.net/?appName=Cluster0"
+    );
+    console.log("Connected to MongoDB");
+    app.listen(9000, () => {
+      console.log("Server is running on port 9000");
+    });
+  } catch (error) {
+    console.error("Failed to connect to MongoDB", error);
+    process.exit(1);
+  }
 };
 start();

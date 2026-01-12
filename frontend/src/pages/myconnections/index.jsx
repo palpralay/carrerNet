@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import DashboardLayout from "@/layouts/dashboardLayout";
 import UserLayout from "@/layouts/UserLayout";
 import { BASE_URL } from "@/redux/config";
@@ -6,6 +7,7 @@ import {
   getConnectionRequests,
   getReceivedRequests,
   respondToConnectionRequest,
+  getAboutUser,
 } from "@/redux/config/action/authAction";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -20,16 +22,25 @@ const MyConnections = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token || !authState.loggedIn) {
+    
+    // Check purely based on token existence first
+    if (!token) {
       router.replace("/login");
       return;
     }
 
     // Load all connection data
+    // We dispatch even if authState.loggedIn is false because we have a token
+    // This handles the page reload case properly
     dispatch(getMyConnections({ token }));
     dispatch(getConnectionRequests({ token }));
     dispatch(getReceivedRequests({ token }));
-  }, [dispatch, router, authState.loggedIn]);
+    
+    // Also ensuring user profile is fetched if needed
+    if (!authState.loggedIn || !authState.profileFetched) {
+        dispatch(getAboutUser({ token }));
+    }
+  }, [dispatch, router]); // Run once on mount
 
   const handleRespondToRequest = async (requestID, action) => {
     try {

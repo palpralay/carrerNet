@@ -1,54 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { BASE_URL, clientServer } from "../../index";
-import { comment } from "postcss/lib/postcss";
+import { clientServer } from "../../index";
 
 export const getAllPosts = createAsyncThunk(
   "posts/getAllPosts",
   async (_, thunkAPI) => {
     try {
-      const state = thunkAPI.getState();
-      const token = state.auth?.token || localStorage.getItem("token");
-
-      const response = await fetch(`${BASE_URL}/posts`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Check if response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Response is not JSON:", await response.text());
-        return thunkAPI.rejectWithValue("Server returned non-JSON response");
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-
-        if (
-          response.status === 401 &&
-          errorData.message === "Invalid or expired token"
-        ) {
-          localStorage.removeItem("token");
-
-          return thunkAPI.rejectWithValue({
-            message: errorData.message,
-            requiresReauth: true,
-          });
-        }
-
-        return thunkAPI.rejectWithValue(
-          errorData.message || "Failed to fetch posts"
-        );
-      }
-
-      const data = await response.json();
-      return data;
+      const response = await clientServer.get("/posts");
+      return response.data;
     } catch (error) {
       console.error("Error in getAllPosts:", error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch posts"
+      );
     }
   }
 );
@@ -57,33 +20,22 @@ export const createPost = createAsyncThunk(
   "posts/createPost",
   async (postData, thunkAPI) => {
     try {
-      const state = thunkAPI.getState();
-      const token = state.auth?.token || localStorage.getItem("token");
-
       const { file, body } = postData;
       const formData = new FormData();
-      formData.append("media", file);
-      formData.append("body", body);
+      if (file) formData.append("media", file);
+      if (body) formData.append("body", body);
 
-      const response = await fetch(`${BASE_URL}/post`, {
-        method: "POST",
-        body: formData,
+      const response = await clientServer.post("/post", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        return thunkAPI.rejectWithValue(
-          errorData.message || "Failed to create post"
-        );
-      }
-
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to create post"
+      );
     }
   }
 );
@@ -92,54 +44,27 @@ export const deletePost = createAsyncThunk(
   "posts/deletePost",
   async (postId, thunkAPI) => {
     try {
-      const state = thunkAPI.getState();
-      const token = state.auth?.token || localStorage.getItem("token");
-      const response = await fetch(`${BASE_URL}/delete/${postId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        return thunkAPI.rejectWithValue(
-          errorData.message || "Failed to delete post"
-        );
-      }
-
-      const data = await response.json();
-      return data;
+      const response = await clientServer.delete(`/delete/${postId}`);
+      return response.data;
     } catch (error) {
-      console.error("Error in deletePost:", error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to delete post"
+      );
     }
   }
 );
 
-export const incrimentLike = createAsyncThunk(
-  "posts/incrimentLike",
+export const incrementLike = createAsyncThunk(
+  "posts/incrementLike",
   async (postId, thunkAPI) => {
     try {
-      const state = thunkAPI.getState();
-      const token = state.auth?.token || localStorage.getItem("token");
-      const response = await clientServer.get(`/post_like/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await clientServer.get(`/post_like/${postId}`);
       return response.data;
     } catch (error) {
-      console.error("Error in incrimentLike:", error);
-      if (error.response) {
-        console.error("Response status:", error.response.status);
-        console.error("Response data:", error.response.data);
-        return thunkAPI.rejectWithValue(
-          error.response.data?.message || error.message
-        );
-      }
-      return thunkAPI.rejectWithValue(error.message);
+      console.error("Error in incrementLike:", error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to like post"
+      );
     }
   }
 );
@@ -148,20 +73,9 @@ export const getComments = createAsyncThunk(
   "posts/getComments",
   async (postId, thunkAPI) => {
     try {
-      const state = thunkAPI.getState();
-      const token = state.auth?.token || localStorage.getItem("token");
-      const response = await clientServer.get(`/get_comment/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
-      console.log("Backend response for getComments:", response.data);
-      
-      // Handle different possible response structures
-      let comments = response.data.comments || response.data.comment || response.data || [];
-      
-      console.log("Extracted comments:", comments);
+      const response = await clientServer.get(`/get_comment/${postId}`);
+      // Handle response structure { comments: [...] }
+      const comments = response.data.comments || response.data || [];
       
       return thunkAPI.fulfillWithValue({
         comments: comments,
@@ -169,7 +83,9 @@ export const getComments = createAsyncThunk(
       });
     } catch (error) {
       console.error("Error in getComments:", error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to get comments"
+      );
     }
   }
 );
@@ -178,27 +94,31 @@ export const addComment = createAsyncThunk(
   "posts/addComment",
   async ({ postId, commentText }, thunkAPI) => {
     try {
-      console.log(
-        "Adding comment to postId:",
-        postId,
-        "with text:",
-        commentText
-      );
-      const state = thunkAPI.getState();
-      const token = state.auth?.token || localStorage.getItem("token");
-      const response = await clientServer.post(
-        `/comment/${postId}`,
-        { body: commentText },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await clientServer.post(`/comment/${postId}`, { 
+        body: commentText 
+      });
       return thunkAPI.fulfillWithValue(response.data);
     } catch (error) {
       console.error("Error in addComment:", error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to add comment"
+      );
+    }
+  }
+);
+
+export const deleteComment = createAsyncThunk(
+  "posts/deleteComment",
+  async ({ postId, commentId }, thunkAPI) => {
+    try {
+      const response = await clientServer.delete(
+        `/delete_comment/${postId}/${commentId}`
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to delete comment"
+      );
     }
   }
 );

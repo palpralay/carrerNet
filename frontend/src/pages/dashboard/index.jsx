@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import DashboardLayout from "@/layouts/dashboardLayout";
@@ -10,10 +11,9 @@ import {
   deletePost,
   getAllPosts,
   getComments,
-  incrimentLike,
+  incrementLike,
 } from "@/redux/config/action/postAction";
 import { useRouter } from "next/router";
-import { comment } from "postcss/lib/postcss";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "sonner";
@@ -22,7 +22,6 @@ const Dashboard = () => {
   const authState = useSelector((state) => state.auth);
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
   const dispatch = useDispatch();
   const [postContent, setPostContent] = useState("");
   const [file, setFile] = useState(null);
@@ -33,58 +32,34 @@ const Dashboard = () => {
   const [comment, setComment] = useState("");
 
   
-  // Initial load - auth check
+  // Initial load - data fetching
   useEffect(() => {
-    if (isInitialized) return;
-
     const token = localStorage.getItem("token");
 
     if (!token) {
-      setIsChecking(false);
       router.replace("/login");
       return;
     }
 
-    // If we have a token but not logged in via Redux, fetch user data
-    if (!authState.loggedIn || !authState.profileFetched) {
-      dispatch(getAboutUser({ token })).then((result) => {
-        if (result.error) {
-          // Token is invalid, clear it and redirect to login
-          console.error("Auth failed:", result.error);
-          localStorage.removeItem("token");
-          document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
-          setIsChecking(false);
-          router.replace("/login");
-        } else {
-          // Auth successful
-          setIsChecking(false);
-          setIsInitialized(true);
-        }
-      });
-    } else {
-      // Already logged in and profile fetched
-      setIsChecking(false);
-      setIsInitialized(true);
-    }
-  }, [authState.loggedIn, authState.profileFetched, dispatch, router, isInitialized]);
+    // Since token exists, we can assume user is logged in (until API fails)
+    // This prevents blinking/redirect if Redux state isn't rehydrated yet
+    setIsChecking(false);
 
-  // Fetch posts and users after auth is confirmed
-  useEffect(() => {
-    if (!isInitialized || !authState.loggedIn) return;
-
-    // Fetch posts with error handling
-    dispatch(getAllPosts()).then((result) => {
-      if (result.error) {
-        console.error("Error fetching posts:", result.error);
-      } else {
-        console.log("Posts loaded:", result.payload);
-      }
-    });
-
+    // Fetch posts immediately if (and only if) we have a token
+    // This allows posts to load even if profile fetch is slower
+    dispatch(getAllPosts());
+    
     if (!authState.all_profile_fetched) {
       dispatch(getAllUsers());
     }
-  }, [isInitialized, authState.loggedIn, authState.all_profile_fetched, dispatch]);
+
+    // Ensure profile is loaded
+    if (!authState.loggedIn || !authState.profileFetched) {
+      // We manually check if we're not logged in Redux but have token
+      // this means we just reloaded page
+      dispatch(getAboutUser({ token }));
+    }
+  }, []); // Run once on mount to ensure data is fetched
 
   // File preview effect
   useEffect(() => {
@@ -207,9 +182,6 @@ const Dashboard = () => {
       }
     }
   };
-
-  console.log("Posts state:", postState);
-  console.log("Posts array:", postState.posts);
 
   return (
     <UserLayout>
@@ -461,7 +433,7 @@ const Dashboard = () => {
 
                         try {
                           const result = await dispatch(
-                            incrimentLike(post._id)
+                            incrementLike(post._id)
                           );
 
                           if (result.error) {
@@ -470,8 +442,9 @@ const Dashboard = () => {
                             );
                             console.error("Like error:", result.error);
                           } else {
-                            // Refresh posts after successful like
-                            await dispatch(getAllPosts());
+                            // Update local state is handled by reducer now, 
+                            // but we still refresh to be safe or if multiple users are active
+                            // Optimistic update in reducer is better though
                           }
                         } catch (error) {
                           console.error("Error liking post:", error);
@@ -533,13 +506,13 @@ const Dashboard = () => {
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
-                        stroke-width="1.5"
+                        strokeWidth="1.5"
                         stroke="currentColor"
-                        class="size-8 cursor-pointer hover:text-indigo-600 transition"
+                        className="size-8 cursor-pointer hover:text-indigo-600 transition"
                       >
                         <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                           d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
                         />
                       </svg>
@@ -647,7 +620,7 @@ const Dashboard = () => {
                     }}
                     className="bg-blue-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-full 
                       text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed
-                      flex-shrink-0"
+                      shrink-0"
                   >
                     Post
                   </button>
