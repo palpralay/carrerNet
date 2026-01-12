@@ -8,11 +8,11 @@ import DashboardLayout from "@/layouts/dashboardLayout";
 import { BASE_URL } from "@/redux/config";
 import { useSelector, useDispatch } from "react-redux";
 import { getAllPosts, deletePost } from "@/redux/config/action/postAction";
-import { 
-  sendConnectionRequest, 
+import clientServer, {
+  sendConnectionRequest,
   getConnectionRequests,
   getReceivedRequests,
-  getMyConnections 
+  getMyConnections,
 } from "@/redux/config/action/authAction";
 import { toast } from "sonner";
 
@@ -22,12 +22,12 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { username } = router.query;
-  
+
   const [profileData, setProfileData] = useState(initialProfileData);
   const [loading, setLoading] = useState(!initialProfileData);
   const [error, setError] = useState(ssrError);
   const [userPosts, setUserPosts] = useState([]);
-  
+
   // Connection status state
   const [connectionStatus, setConnectionStatus] = useState({
     isMe: false,
@@ -36,6 +36,9 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
     requestReceived: false,
     loading: false,
   });
+
+  // Resume download state
+  const [downloadingResume, setDownloadingResume] = useState(false);
 
   // Fetch profile if not loaded via SSR
   useEffect(() => {
@@ -93,7 +96,6 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
       dispatch(getReceivedRequests({ token }));
     }
   }, [dispatch]);
-
 
   useEffect(() => {
     if (!profileData?.userId?._id || !authState.user?._id) return;
@@ -169,8 +171,10 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
       } else {
         toast.success("Connection request sent!");
         // Refresh connection requests
-        dispatch(getConnectionRequests({ token: localStorage.getItem("token") }));
-        
+        dispatch(
+          getConnectionRequests({ token: localStorage.getItem("token") })
+        );
+
         // Update local state
         setConnectionStatus((prev) => ({
           ...prev,
@@ -196,6 +200,54 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
     } catch (error) {
       console.error("Error deleting post:", error);
       toast.error("Failed to delete post");
+    }
+  };
+
+  const handleDownloadResume = async () => {
+    if (!profileData?._id) {
+      toast.error("Profile data not available");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login to download resume");
+      router.push("/login");
+      return;
+    }
+
+    setDownloadingResume(true);
+
+    try {
+      const response = await clientServer.get(
+        `/user/download_resume?id=${profileData._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.fileURL) {
+        window.open(`${BASE_URL}/${response.data.fileURL}`, "_blank");
+        toast.success("Opening resume...");
+      } else {
+        toast.error("Resume file not found");
+      }
+    } catch (error) {
+      console.error("Error downloading resume:", error);
+      
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+        localStorage.removeItem("token");
+        router.push("/login");
+      } else {
+        toast.error(
+          error.response?.data?.message || "Failed to download resume"
+        );
+      }
+    } finally {
+      setDownloadingResume(false);
     }
   };
 
@@ -409,6 +461,34 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
             <p className="text-lg text-gray-500 mb-1">
               @{profileData.userId?.username}
             </p>
+            
+            <div
+              onClick={handleDownloadResume}
+              className={`flex justify-center gap-2 hover:scale-105 cursor-pointer items-center transition-all
+                ${downloadingResume ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <p className="text-indigo-600 font-medium">
+                {downloadingResume 
+                  ? "Downloading..." 
+                  : connectionStatus.isMe 
+                  ? "Download Your Resume" 
+                  : "Download Resume"}
+              </p>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className={`size-6 text-indigo-600 ${downloadingResume ? 'animate-bounce' : ''}`}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                />
+              </svg>
+            </div>
           </div>
 
           {/* Connection Button */}
@@ -439,7 +519,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
             </div>
           )}
 
-           {profileData.bio && (
+          {profileData.bio && (
             <div className="mb-6 pb-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
                 <svg
@@ -631,7 +711,7 @@ export async function getServerSideProps(context) {
 
     const username = context.params.username;
     const response = await fetch(
-      `http://localhost:9000/user/getUserProfileByUsername/${username}`,
+      `${BASE_URL}/user/getUserProfileByUsername/${username}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
