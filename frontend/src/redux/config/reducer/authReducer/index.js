@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser, logoutUser, getAboutUser, getAllUsers } from "../../action/authAction/index.js";
+import { loginUser, registerUser, logoutUser, getAboutUser, getAllUsers, getConnectionRequests } from "../../action/authAction/index.js";
+import { act } from "react";
 
 const initialState = {
   user: {},
@@ -133,6 +134,17 @@ const authSlice = createSlice({
         state.isError = true;
         state.message = action.payload || "Failed to fetch all users";
         state.all_profile_fetched = false;
+      })
+      .addCase(getConnectionRequests.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getConnectionRequests.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.connectionRequest = action.payload.requests || [];
+      })
+      .addCase(getConnectionRequests.rejected, (state, action) => {
+        state.isLoading = false;
+        state.message = action.payload || "Failed to fetch connection requests";
       })
 
       // LOGOUT

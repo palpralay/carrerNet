@@ -22,12 +22,12 @@ Content-Type: application/json
 
 ###
 GET http://localhost:9000/get_user_and_profile HTTP/1.1
-Authorization: Bearer bcddd6b232678390cfb901332d8338f97ecaef45f839d099c4329ede15642e81
+Authorization: Bearer fbced5c4d86b0c3def7bde6a5854be8abf25580096614d1e8021bd120df0865d
 Content-Type: application/json
 
 ###
 POST http://localhost:9000/update_profile_data HTTP/1.1
-Authorization: Bearer bcddd6b232678390cfb901332d8338f97ecaef45f839d099c4329ede15642e81
+Authorization: Bearer fbced5c4d86b0c3def7bde6a5854be8abf25580096614d1e8021bd120df0865d
 Content-Type: application/json
 
 {
@@ -63,16 +63,16 @@ Content-Type: application/json
 
 ###
 GET http://localhost:9000/get_all_users HTTP/1.1
-Authorization: Bearer bcddd6b232678390cfb901332d8338f97ecaef45f839d099c4329ede15642e81
+Authorization: Bearer fbced5c4d86b0c3def7bde6a5854be8abf25580096614d1e8021bd120df0865d
 Content-Type: application/json
 
 ###
 GET http://localhost:9000/user/download_resume
-Authorization: Bearer bcddd6b232678390cfb901332d8338f97ecaef45f839d099c4329ede15642e81
+Authorization: Bearer fbced5c4d86b0c3def7bde6a5854be8abf25580096614d1e8021bd120df0865d
 
 ###
 POST http://localhost:9000/post HTTP/1.1
-Authorization: Bearer bcddd6b232678390cfb901332d8338f97ecaef45f839d099c4329ede15642e81
+Authorization: Bearer fbced5c4d86b0c3def7bde6a5854be8abf25580096614d1e8021bd120df0865d
 Content-Type: application/json
 
 {

@@ -20,6 +20,7 @@ import { toast } from "sonner";
 
 const Dashboard = () => {
   const authState = useSelector((state) => state.auth);
+  const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
   const dispatch = useDispatch();
   const [postContent, setPostContent] = useState("");
@@ -180,7 +181,6 @@ const Dashboard = () => {
       }
     }
   };
-    const router = useRouter();
 
   console.log("Posts state:", postState);
   console.log("Posts array:", postState.posts);
@@ -288,7 +288,7 @@ const Dashboard = () => {
                   <button
                     onClick={handlePostSubmit}
                     disabled={postState.isLoading}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-indigo-600 cursor-pointer hover:bg-indigo-700 text-white px-6 py-2 rounded-full text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {postState.isLoading ? "Posting..." : "Post"}
                   </button>
@@ -298,14 +298,14 @@ const Dashboard = () => {
           </div>
 
           {/* Debug Panel - Remove this in production */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+          {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
             <p className="font-semibold mb-2">🔍 Debug Info:</p>
             <p>Posts Count: {postState.posts?.length || 0}</p>
             <p>Is Loading: {postState.isLoading ? "Yes" : "No"}</p>
             <p>Post Fetched: {postState.postFetch ? "Yes" : "No"}</p>
             <p>Is Error: {postState.isError ? "Yes" : "No"}</p>
             {postState.message && <p>Message: {postState.message}</p>}
-          </div>
+          </div> */}
 
           {/* Posts Feed */}
           <div className="space-y-4">

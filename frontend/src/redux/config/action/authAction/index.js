@@ -3,6 +3,7 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { clientServer } from "@/redux/config/index.jsx";
+import { connect } from "react-redux";
 
 // IMPROVED Helper function to set cookie
 const setCookie = (name, value, days = 7) => {
@@ -171,6 +172,93 @@ export const getAllUsers = createAsyncThunk(
     }
   }
 );
+
+export const sendConnectionRequest = createAsyncThunk(
+  "user/sendConnectionRequest",
+  async (targetUserId, thunkAPI) => {
+    try {
+      const response = await clientServer.post(
+        `/user/send_connection_request/${targetUserId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to send connection request"
+      );
+    }
+  }
+)
+
+
+export const getConnectionRequests = createAsyncThunk(
+  "user/getConnectionRequests",
+  async (_, thunkAPI) => {
+    try {
+      const response = await clientServer.get("/user/getConnectionRequests", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch connection requests"
+      );
+    }
+  }
+)
+
+
+export const getReceivedRequests = createAsyncThunk(
+  "user/getReceivedRequests",
+  async (_, thunkAPI) => {
+    try {
+      const response = await clientServer.get("/user/getReceivedRequests", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return response.data;
+    }
+    catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch received requests"
+      );
+    } 
+  }
+);
+
+export const acceptConnection = createAsyncThunk(
+  "user/acceptConnection",
+  async ({ requestID, action }, thunkAPI) => {
+    try {
+      const response = await clientServer.post(
+        `/user/accept_connection_request/${requestID}/${action}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      return response.data;
+    }
+    catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to respond to connection request"
+      );
+    }
+  }
+)
+
 
 export const logoutUser = createAsyncThunk(
   "user/logout",

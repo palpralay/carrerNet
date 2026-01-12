@@ -92,20 +92,6 @@ const Discover = () => {
                       @{profile.userId?.username || "unknown"}
                     </p>
 
-                    {/* Current Position */}
-                    {profile.currentPost && (
-                      <p className="text-sm text-gray-700 mb-3 italic">
-                        {profile.currentPost}
-                      </p>
-                    )}
-
-                    {/* Bio */}
-                    {profile.bio && (
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                        {profile.bio}
-                      </p>
-                    )}
-
                     {/* Connect Button */}
                     <button
                       onClick={() => {
