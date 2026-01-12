@@ -9,6 +9,7 @@ import {
   respondToConnectionRequest,
   getAboutUser,
 } from "@/redux/config/action/authAction";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -96,7 +97,7 @@ const MyConnections = () => {
       >
         <div className="flex items-center gap-4">
           {/* Profile Picture */}
-          <img
+          <Image
             src={
               user.profilePicture && user.profilePicture !== "default.jpg"
                 ? `${BASE_URL}/${user.profilePicture}`
@@ -107,6 +108,8 @@ const MyConnections = () => {
             onError={(e) => {
               e.target.src = "/images/avatar.png";
             }}
+            width={64}
+            height={64}
           />
 
           {/* User Info */}
@@ -284,7 +287,7 @@ const MyConnections = () => {
           )}
 
           {/* Quick Actions */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6">
+          <div className="bg-linear-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">
               Grow Your Network
             </h2>

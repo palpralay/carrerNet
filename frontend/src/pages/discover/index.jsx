@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllUsers } from "@/redux/config/action/authAction";
 import { BASE_URL } from "@/redux/config";
 import { useRouter } from "next/router";
+import Image from "next/image";
 
 const Discover = () => {
   const authState = useSelector((state) => state.auth);
@@ -68,7 +69,7 @@ const Discover = () => {
                 >
                   {/* Profile Picture */}
                   <div className="flex justify-center mb-4">
-                    <img
+                    <Image
                       src={
                         profile.userId?.profilePicture &&
                         profile.userId.profilePicture !== "default.jpg"
@@ -80,6 +81,8 @@ const Discover = () => {
                       onError={(e) => {
                         e.target.src = "/images/avatar.png";
                       }}
+                      width={96}
+                      height={96}
                     />
                   </div>
 
@@ -125,7 +128,7 @@ const Discover = () => {
                 </svg>
                 <p className="text-2xl font-medium mb-4 text-violet-800">No users found</p>
                 <div className="flex h-1/2 justify-center ">
-                  <img src="/images/noUser.svg" alt="" />
+                  <Image src="/images/noUser.svg" alt="no users found" width={200} height={200} />
                 </div>
               </div>
             )}

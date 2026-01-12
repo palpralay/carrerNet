@@ -15,6 +15,7 @@ import clientServer, {
   getMyConnections,
 } from "@/redux/config/action/authAction";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
   const authState = useSelector((state) => state.auth);
@@ -389,7 +390,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
           <div className="max-w-3xl mx-auto relative mb-16">
             <div className="h-40 bg-amber-500 rounded-xl shadow-lg border border-amber-200"></div>
             <div className="absolute left-1/2 -bottom-16 transform -translate-x-1/2">
-              <img
+              <Image
                 src={
                   profileData.userId?.profilePicture &&
                   profileData.userId.profilePicture !== "default.jpg"
@@ -401,6 +402,8 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                 onError={(e) => {
                   e.target.src = "/images/avatar.png";
                 }}
+                width={64}
+                height={64}
               />
             </div>
           </div>
@@ -573,10 +576,12 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                 >
                   <p className="text-gray-800 mb-4">{post.body}</p>
                   {post.media && (
-                    <img
+                    <Image
                       src={`${BASE_URL}/${post.media}`}
                       alt="post"
                       className="w-full h-auto rounded-lg mb-4"
+                      width={640}
+                      height={480}
                     />
                   )}
                   {connectionStatus.isMe && (

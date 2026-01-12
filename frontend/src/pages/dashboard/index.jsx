@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import DashboardLayout from "@/layouts/dashboardLayout";
@@ -13,6 +12,7 @@ import {
   getComments,
   incrementLike,
 } from "@/redux/config/action/postAction";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -195,8 +195,8 @@ const Dashboard = () => {
 
             <div className="flex gap-4">
               {/* Profile Image */}
-              <img
-                className="h-12 w-12 rounded-full object-cover flex-shrink-0"
+              <Image
+                className="h-12 w-12 rounded-full object-cover shrink-0"
                 src={
                   authState.user?.profilePicture &&
                   authState.user.profilePicture !== "default.jpg"
@@ -207,6 +207,8 @@ const Dashboard = () => {
                 onError={(e) => {
                   e.target.src = "/images/avatar.png";
                 }}
+                width={64}
+                height={64}
               />
 
               {/* Input Area */}
@@ -217,16 +219,18 @@ const Dashboard = () => {
                   name="status"
                   id="status"
                   placeholder="What's on your mind?"
-                  className="w-full resize-none min-h-[100px] p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full resize-none min-h-25 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 ></textarea>
 
                 {/* File Preview */}
                 {filePreview && (
                   <div className="mt-3 relative inline-block">
-                    <img
+                    <Image
                       src={filePreview}
                       alt="Preview"
                       className="max-h-40 rounded-lg border border-gray-300"
+                      width={160}
+                      height={160}
                     />
                     <button
                       onClick={() => {
@@ -344,7 +348,7 @@ const Dashboard = () => {
                   {/* Post Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
-                      <img
+                      <Image
                         src={
                           post.userId?.profilePicture &&
                           post.userId.profilePicture !== "default.jpg"
@@ -356,6 +360,8 @@ const Dashboard = () => {
                         onError={(e) => {
                           e.target.src = "/images/avatar.png";
                         }}
+                        width={48}
+                        height={48}
                       />
                       <div className="ml-3">
                         <p className="font-semibold text-gray-900">
@@ -410,13 +416,16 @@ const Dashboard = () => {
 
                   {/* Post Media */}
                   {post.media && (
-                    <img
+                    <Image
                       src={`${BASE_URL}/${post.media}`}
                       alt="Post content"
                       className="w-full object-cover h-96 rounded-lg border border-gray-200"
+                      unoptimized={true}
                       onError={(e) => {
                         e.target.style.display = "none";
                       }}
+                      width={640}
+                      height={640}
                     />
                   )}
 
@@ -556,7 +565,7 @@ const Dashboard = () => {
                   <div className="space-y-4">
                     {postState.comments.map((postComment, index) => (
                       <div key={index} className="flex gap-3 pb-4 border-b border-gray-100 last:border-0">
-                        <img 
+                        <Image 
                           src={
                             postComment.userId?.profilePicture &&
                             postComment.userId.profilePicture !== "default.jpg"
@@ -568,6 +577,8 @@ const Dashboard = () => {
                           onError={(e) => {
                             e.target.src = "/images/avatar.png";
                           }}
+                          width={32}
+                          height={32}
                         />
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-sm">

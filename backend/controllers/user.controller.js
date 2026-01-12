@@ -3,7 +3,6 @@ import Profile from "../models/profile.model.js";
 import ConnectionRequest from "../models/connections.model.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import fs from "fs";
 
 //  |----------------------------------------------------------------------|
 //  |                          User Registration                           |
