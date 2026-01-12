@@ -153,7 +153,7 @@ const MyConnections = () => {
             {type === "connection" && (
               <button
                 onClick={() => router.push(`/viewProfile/${user.username}`)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition"
+                className="bg-indigo-600 hover:bg-indigo-700 cursor-pointer text-white px-4 py-2 rounded-lg text-sm font-semibold transition"
               >
                 View Profile
               </button>
@@ -189,7 +189,7 @@ const MyConnections = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 px-6 py-3 rounded-lg font-semibold transition ${
+                  className={`flex-1 px-6 py-3 rounded-lg cursor-pointer font-semibold transition ${
                     activeTab === tab.id
                       ? "bg-indigo-600 text-white"
                       : "bg-gray-50 text-gray-600 hover:bg-gray-100"
@@ -296,7 +296,7 @@ const MyConnections = () => {
             </p>
             <button
               onClick={() => router.push("/discover")}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-semibold transition"
+              className="bg-indigo-600 hover:bg-indigo-700 cursor-pointer text-white px-6 py-2 rounded-full font-semibold transition"
             >
               Discover People
             </button>

@@ -2,13 +2,14 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser, getAboutUser } from "@/redux/config/action/authAction";
+import Image from "next/image";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth);
-  
+
   // Check if user is actually logged in (from Redux or localStorage)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -21,7 +22,13 @@ const Navbar = () => {
     if (hasToken && !authState.user?.name && !authState.isLoading) {
       dispatch(getAboutUser({ token }));
     }
-  }, [authState.loggedIn, authState.token, authState.user, authState.isLoading, dispatch]);
+  }, [
+    authState.loggedIn,
+    authState.token,
+    authState.user,
+    authState.isLoading,
+    dispatch,
+  ]);
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
@@ -30,29 +37,74 @@ const Navbar = () => {
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 bg-white relative">
-     
       <p
         onClick={() => router.push("/")}
         className="text-2xl font-extrabold
                     bg-gradient-to-r from-blue-800 via-sky-500 to-yellow-500
                     bg-[length:300%_300%]
                     bg-clip-text text-transparent
-                    animate-gradient cursor-pointer">
+                    animate-gradient cursor-pointer"
+      >
         CareerNet
       </p>
 
       <div className="hidden sm:flex items-center gap-8">
         {isLoggedIn && authState.user?.name && (
           <>
-            <p className="text-gray-700 font-medium">
-              Welcome,{" "}
-              <span className="font-semibold">{authState.user.name}</span>
-            </p>
+            <div className="flex items-center gap-4">
+              <p className="text-gray-700 font-medium">
+                Welcome,{" "}
+                <span className="font-semibold">{authState.user.name}</span>
+              </p>
+              <Image
+                onClick={() => {
+                  router.push(`/viewProfile/${authState.user.username}`);
+                }}
+                src={
+                  authState.user.profilePicture &&
+                  authState.user.profilePicture !== "default.jpg"
+                    ? `${BASE_URL}/${authState.user.profilePicture}`
+                    : "/images/avatar.png"
+                }
+                alt={authState.user.name || "User"}
+                className="h-10 w-10 rounded-full cursor-pointer object-cover hover:scale-110 border-2 border-indigo-100"
+                onError={(e) => {
+                  e.target.src = "/images/avatar.png";
+                }}
+                width={40}
+                height={40}
+              />
+            </div>
             <button
               onClick={handleLogout}
-              className="px-6 py-2 border-red-500 text-black cursor-pointer  rounded-full transition"
+              className="relative group px-6 py-2 cursor-pointer rounded-full"
             >
-              Logout
+              {/* Icon */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6 transition group-hover:text-red-600 group-hover:scale-110"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+                />
+              </svg>
+
+              {/* Hover Text */}
+              <span
+                className="absolute top-full mt-2 left-1/2 -translate-x-1/2
+                   whitespace-nowrap text-sm
+                   bg-indigo-600 text-white px-3 py-1 rounded
+                   opacity-0 group-hover:opacity-100
+                   transition duration-300"
+              >
+                Logout
+              </span>
             </button>
           </>
         )}

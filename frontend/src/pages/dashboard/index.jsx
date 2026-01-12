@@ -31,7 +31,6 @@ const Dashboard = () => {
   const [commentsVisibleForPost, setCommentsVisibleForPost] = useState(null);
   const [comment, setComment] = useState("");
 
-  
   // Initial load - data fetching
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -41,27 +40,19 @@ const Dashboard = () => {
       return;
     }
 
-    // Since token exists, we can assume user is logged in (until API fails)
-    // This prevents blinking/redirect if Redux state isn't rehydrated yet
     setIsChecking(false);
 
-    // Fetch posts immediately if (and only if) we have a token
-    // This allows posts to load even if profile fetch is slower
     dispatch(getAllPosts());
-    
+
     if (!authState.all_profile_fetched) {
       dispatch(getAllUsers());
     }
 
-    // Ensure profile is loaded
     if (!authState.loggedIn || !authState.profileFetched) {
-      // We manually check if we're not logged in Redux but have token
-      // this means we just reloaded page
       dispatch(getAboutUser({ token }));
     }
-  }, []); // Run once on mount to ensure data is fetched
+  }, []);
 
-  // File preview effect
   useEffect(() => {
     if (file) {
       const objectUrl = URL.createObjectURL(file);
@@ -196,7 +187,10 @@ const Dashboard = () => {
             <div className="flex gap-4">
               {/* Profile Image */}
               <Image
-                className="h-12 w-12 rounded-full object-cover shrink-0"
+                onClick={() => {
+                  router.push(`/viewProfile/${authState.user.username}`);
+                }}
+                className="h-12 w-12 rounded-full cursor-pointer object-cover shrink-0"
                 src={
                   authState.user?.profilePicture &&
                   authState.user.profilePicture !== "default.jpg"
@@ -349,6 +343,11 @@ const Dashboard = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
                       <Image
+                        onClick={() => {
+                          router.push(
+                            `/viewProfile/${authState.user.username}`
+                          );
+                        }}
                         src={
                           post.userId?.profilePicture &&
                           post.userId.profilePicture !== "default.jpg"
@@ -356,7 +355,7 @@ const Dashboard = () => {
                             : "/images/avatar.png"
                         }
                         alt="Author"
-                        className="h-12 w-12 rounded-full object-cover"
+                        className="h-12 w-12 rounded-full cursor-pointer object-cover"
                         onError={(e) => {
                           e.target.src = "/images/avatar.png";
                         }}
@@ -451,7 +450,7 @@ const Dashboard = () => {
                             );
                             console.error("Like error:", result.error);
                           } else {
-                            // Update local state is handled by reducer now, 
+                            // Update local state is handled by reducer now,
                             // but we still refresh to be safe or if multiple users are active
                             // Optimistic update in reducer is better though
                           }
@@ -554,7 +553,6 @@ const Dashboard = () => {
 
               {/* Comments List - Scrollable */}
               <div className="flex-1 overflow-y-auto px-6 py-4">
-                
                 {!postState.comments || postState.comments.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-gray-500 text-sm md:text-base">
@@ -564,8 +562,11 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-4">
                     {postState.comments.map((postComment, index) => (
-                      <div key={index} className="flex gap-3 pb-4 border-b border-gray-100 last:border-0">
-                        <Image 
+                      <div
+                        key={index}
+                        className="flex gap-3 pb-4 border-b border-gray-100 last:border-0"
+                      >
+                        <Image
                           src={
                             postComment.userId?.profilePicture &&
                             postComment.userId.profilePicture !== "default.jpg"
@@ -611,23 +612,33 @@ const Dashboard = () => {
                         toast.error("Please enter a comment");
                         return;
                       }
-                      
-                      console.log("Adding comment to postId:", commentsVisibleForPost, "with text:", comment);
-                      
+
+                      console.log(
+                        "Adding comment to postId:",
+                        commentsVisibleForPost,
+                        "with text:",
+                        comment
+                      );
+
                       const addResult = await dispatch(
                         addComment({
                           postId: commentsVisibleForPost,
                           commentText: comment,
                         })
                       );
-                      
+
                       console.log("Add comment result:", addResult);
-                      
+
                       setComment("");
-                      
-                      const commentsResult = await dispatch(getComments(commentsVisibleForPost));
+
+                      const commentsResult = await dispatch(
+                        getComments(commentsVisibleForPost)
+                      );
                       console.log("Get comments result:", commentsResult);
-                      console.log("Current postState.comments:", postState.comments);
+                      console.log(
+                        "Current postState.comments:",
+                        postState.comments
+                      );
                     }}
                     className="bg-blue-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-full 
                       text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed

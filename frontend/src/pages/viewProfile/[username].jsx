@@ -399,11 +399,9 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                 }
                 alt={profileData.userId?.name || "User"}
                 className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-xl"
-                onError={(e) => {
-                  e.target.src = "/images/avatar.png";
-                }}
-                width={64}
-                height={64}
+                width={128}
+                height={128}
+                unoptimized
               />
             </div>
           </div>
@@ -576,7 +574,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                 >
                   <p className="text-gray-800 mb-4">{post.body}</p>
                   {post.media && (
-                    <Image
+                    <img
                       src={`${BASE_URL}/${post.media}`}
                       alt="post"
                       className="w-full h-auto rounded-lg mb-4"
