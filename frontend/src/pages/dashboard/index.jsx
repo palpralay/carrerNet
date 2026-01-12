@@ -22,6 +22,7 @@ const Dashboard = () => {
   const authState = useSelector((state) => state.auth);
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const dispatch = useDispatch();
   const [postContent, setPostContent] = useState("");
   const [file, setFile] = useState(null);
@@ -32,33 +33,58 @@ const Dashboard = () => {
   const [comment, setComment] = useState("");
 
   
-  // Initial load
+  // Initial load - auth check
   useEffect(() => {
+    if (isInitialized) return;
+
     const token = localStorage.getItem("token");
 
     if (!token) {
-      router.push("/login");
-    } else {
       setIsChecking(false);
+      router.replace("/login");
+      return;
+    }
 
-      if (!authState.profileFetched) {
-        dispatch(getAboutUser({ token }));
-      }
-
-      // Fetch posts with error handling
-      dispatch(getAllPosts()).then((result) => {
+    // If we have a token but not logged in via Redux, fetch user data
+    if (!authState.loggedIn || !authState.profileFetched) {
+      dispatch(getAboutUser({ token })).then((result) => {
         if (result.error) {
-          console.error("Error fetching posts:", result.error);
+          // Token is invalid, clear it and redirect to login
+          console.error("Auth failed:", result.error);
+          localStorage.removeItem("token");
+          document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
+          setIsChecking(false);
+          router.replace("/login");
         } else {
-          console.log("Posts loaded:", result.payload);
+          // Auth successful
+          setIsChecking(false);
+          setIsInitialized(true);
         }
       });
-
-      if (!authState.all_profile_fetched) {
-        dispatch(getAllUsers());
-      }
+    } else {
+      // Already logged in and profile fetched
+      setIsChecking(false);
+      setIsInitialized(true);
     }
-  }, []);
+  }, [authState.loggedIn, authState.profileFetched, dispatch, router, isInitialized]);
+
+  // Fetch posts and users after auth is confirmed
+  useEffect(() => {
+    if (!isInitialized || !authState.loggedIn) return;
+
+    // Fetch posts with error handling
+    dispatch(getAllPosts()).then((result) => {
+      if (result.error) {
+        console.error("Error fetching posts:", result.error);
+      } else {
+        console.log("Posts loaded:", result.payload);
+      }
+    });
+
+    if (!authState.all_profile_fetched) {
+      dispatch(getAllUsers());
+    }
+  }, [isInitialized, authState.loggedIn, authState.all_profile_fetched, dispatch]);
 
   // File preview effect
   useEffect(() => {

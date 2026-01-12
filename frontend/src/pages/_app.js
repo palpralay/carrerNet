@@ -7,7 +7,12 @@ import { setAuthFromStorage } from "@/redux/config/reducer/authReducer";
 export default function App({ Component, pageProps }) {
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (!token) return;
+
+    const currentState = store.getState();
+    
+    // Only set auth from storage if not already logged in and not loading
+    if (!currentState.auth.loggedIn && !currentState.auth.isLoading) {
       store.dispatch(setAuthFromStorage({ token }));
     }
   }, []);

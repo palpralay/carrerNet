@@ -1,5 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser, logoutUser, getAboutUser, getAllUsers, getConnectionRequests } from "../../action/authAction/index.js";
+import { 
+  loginUser, 
+  registerUser, 
+  logoutUser, 
+  getAboutUser, 
+  getAllUsers, 
+  getConnectionRequests,
+  getReceivedRequests,
+  getMyConnections,
+  respondToConnectionRequest
+} from "../../action/authAction/index.js";
 import { act } from "react";
 
 const initialState = {
@@ -10,11 +20,11 @@ const initialState = {
   isError: false,
   isSuccess: false,
   isLoading: false,
-  // isTokenThere: false,
   message: "",
   profileFetched: false,
-  connection: [],
-  connectionRequest: [],
+  connections: [],
+  sentRequests: [],
+  receivedRequests: [],
   all_profile_fetched: false,
   allUsers: [],
 };
@@ -114,6 +124,9 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.profileFetched = false;
+        state.loggedIn = false;
+        state.token = null;
+        state.user = {};
         state.message = action.payload || "Failed to fetch user data";
       })
       .addCase(getAllUsers.pending, (state) => {
@@ -140,11 +153,51 @@ const authSlice = createSlice({
       })
       .addCase(getConnectionRequests.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.connectionRequest = action.payload.requests || [];
+        state.sentRequests = action.payload.connections || [];
       })
       .addCase(getConnectionRequests.rejected, (state, action) => {
         state.isLoading = false;
         state.message = action.payload || "Failed to fetch connection requests";
+      })
+
+      // GET RECEIVED REQUESTS
+      .addCase(getReceivedRequests.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getReceivedRequests.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.receivedRequests = action.payload.connections || [];
+      })
+      .addCase(getReceivedRequests.rejected, (state, action) => {
+        state.isLoading = false;
+        state.message = action.payload || "Failed to fetch received requests";
+      })
+
+      // GET MY CONNECTIONS (accepted)
+      .addCase(getMyConnections.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getMyConnections.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.connections = action.payload.connections || [];
+      })
+      .addCase(getMyConnections.rejected, (state, action) => {
+        state.isLoading = false;
+        state.message = action.payload || "Failed to fetch connections";
+      })
+
+      // RESPOND TO CONNECTION REQUEST
+      .addCase(respondToConnectionRequest.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(respondToConnectionRequest.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.message = "Request processed successfully";
+      })
+      .addCase(respondToConnectionRequest.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload || "Failed to respond to request";
       })
 
       // LOGOUT

@@ -23,11 +23,11 @@ const LoginComponent = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if ((authState.loggedIn && authState.token) || token) {
-      router.push("/dashboard");
+    // Only redirect if both Redux state and localStorage are in sync
+    if (authState.loggedIn && authState.token && !authState.isLoading) {
+      router.replace("/dashboard");
     }
-  }, [authState.loggedIn, authState.token, router]);
+  }, [authState.loggedIn, authState.token, authState.isLoading, router]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -55,7 +55,7 @@ const LoginComponent = () => {
       }
       
       setTimeout(() => {
-        router.push("/dashboard");
+        router.replace("/dashboard");
       }, 100);
     }
 

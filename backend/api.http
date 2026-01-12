@@ -27,7 +27,7 @@ Content-Type: application/json
 
 ###
 POST http://localhost:9000/update_profile_data HTTP/1.1
-Authorization: Bearer fbced5c4d86b0c3def7bde6a5854be8abf25580096614d1e8021bd120df0865d
+Authorization: Bearer 695cab070a4fcff00d8d56092b34fc855b44209dfaac03b64eae0ba2d8479aa3
 Content-Type: application/json
 
 {
