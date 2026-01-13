@@ -55,7 +55,10 @@ export default function Home() {
                     bg-gradient-to-r from-blue-800 via-red-500 to-yellow-500
                     bg-[length:300%_300%]
                     bg-clip-text text-transparent
-                    animate-gradient cursor-pointer"
+                    animate-gradient cursor-pointer
+                    hover:scale-105
+                    transition-transform duration-300
+                  "
                 >
                   Join Now →
                 </span>
