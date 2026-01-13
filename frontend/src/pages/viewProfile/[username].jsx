@@ -20,14 +20,18 @@ const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
   {
     ssr: false,
-    loading: () => <span className="text-sm text-gray-500">Loading PDF...</span>,
+    loading: () => (
+      <span className="text-sm text-gray-500">Loading PDF...</span>
+    ),
   }
 );
 const BlobProvider = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.BlobProvider),
   {
     ssr: false,
-    loading: () => <span className="text-sm text-gray-500">Loading PDF...</span>,
+    loading: () => (
+      <span className="text-sm text-gray-500">Loading PDF...</span>
+    ),
   }
 );
 
@@ -37,7 +41,6 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { username } = router.query;
-
 
   const [profileData, setProfileData] = useState(initialProfileData);
   const [loading, setLoading] = useState(false);
@@ -57,7 +60,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
   useEffect(() => {
     console.log("Profile Data State:", profileData);
     console.log("Username:", username);
-    
+
     if (!profileData && !loading && username) {
       const fetchProfile = async () => {
         try {
@@ -407,19 +410,21 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
           <div className="max-w-3xl mx-auto relative mb-16">
             <div className="h-40 bg-amber-500 rounded-xl shadow-lg border border-amber-200"></div>
             <div className="absolute left-1/2 -bottom-16 transform -translate-x-1/2">
-              <Image
-                src={
-                  profileData.userId?.profilePicture &&
-                  profileData.userId.profilePicture !== "default.jpg"
-                    ? `${BASE_URL}/${profileData.userId.profilePicture}`
-                    : "/images/avatar.png"
-                }
-                alt={profileData.userId?.name || "User"}
-                className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-xl"
-                width={128}
-                height={128}
-                unoptimized
-              />
+              <div className="p-1 rounded-full bg-linear-to-r from-pink-500 via-purple-500 to-indigo-500 shadow-xl">
+                <Image
+                  src={
+                    profileData.userId?.profilePicture &&
+                    profileData.userId.profilePicture !== "default.jpg"
+                      ? `${BASE_URL}/${profileData.userId.profilePicture}`
+                      : "/images/avatar.png"
+                  }
+                  alt={profileData.userId?.name || "User"}
+                  className="h-32 w-32 rounded-full cursor-pointer object-cover bg-white"
+                  width={128}
+                  height={128}
+                  unoptimized
+                />
+              </div>
             </div>
           </div>
 
@@ -431,7 +436,6 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
             <p className="text-lg text-gray-500 mb-1">
               @{profileData.userId?.username}
             </p>
-            
           </div>
 
           {/* Connection Button */}
@@ -449,7 +453,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                       }
                     }}
                     disabled={loading}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-full border-2 border-indigo-600 text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors"
+                    className="flex items-center cursor-pointer gap-2 px-6 py-2.5 rounded-full border-2 border-indigo-600 text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -472,7 +476,9 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
 
               <PDFDownloadLink
                 document={<ResumePDF profileData={profileData} />}
-                fileName={`${profileData.userId?.username || "user"}_resume.pdf`}
+                fileName={`${
+                  profileData.userId?.username || "user"
+                }_resume.pdf`}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
               >
                 {({ blob, url, loading, error }) => (
@@ -570,7 +576,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                 {profileData.pastWork.map((work, index) => (
                   <div
                     key={index}
-                    className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-5 border border-indigo-100 hover:shadow-md transition"
+                    className="bg-linear-to-r from-indigo-100 to-purple-50 rounded-lg p-5 border border-blue-300 hover:shadow-md transition"
                   >
                     <p className="font-semibold text-gray-900 text-lg mb-1">
                       {work.position}
@@ -609,7 +615,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                 {profileData.education.map((edu, index) => (
                   <div
                     key={index}
-                    className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-5 border border-blue-100 hover:shadow-md transition"
+                    className="bg-linear-to-r from-blue-100 to-cyan-150 rounded-lg p-5 border border-blue-400 hover:shadow-md transition"
                   >
                     <p className="font-semibold text-gray-900 text-lg mb-1">
                       {edu.school}
@@ -709,7 +715,9 @@ export async function getServerSideProps(context) {
     console.log("SSR: Token from cookies:", token ? "Found" : "Missing");
 
     if (!token) {
-      console.log("SSR: No token found. Returning null profile to allow client-side fallback.");
+      console.log(
+        "SSR: No token found. Returning null profile to allow client-side fallback."
+      );
       return {
         props: {
           initialProfileData: null,
@@ -721,7 +729,7 @@ export async function getServerSideProps(context) {
 
     const username = context.params.username;
     console.log(`SSR: Fetching profile for ${username} from ${BASE_URL}`);
-    
+
     const response = await fetch(
       `${BASE_URL}/user/getUserProfileByUsername/${username}`,
       {
@@ -738,12 +746,12 @@ export async function getServerSideProps(context) {
       if (response.status === 401) {
         // Token invalid? Let client handle it
         return {
-           props: {
+          props: {
             initialProfileData: null,
             ssrError: "Unauthorized",
             ssrMode: false,
-           }
-        }
+          },
+        };
       }
 
       return {

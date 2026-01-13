@@ -13,8 +13,8 @@ POST http://localhost:9000/login HTTP/1.1
 Content-Type: application/json
 
 {
-  "email": "user10@gmail.com",
-  "password": "user10"
+  "email": "pralaypal111@gmail.com",
+  "password": "123456"
 }
 
 
@@ -27,7 +27,7 @@ Content-Type: application/json
 
 ###
 POST http://localhost:9000/update_profile_data HTTP/1.1
-Authorization: Bearer 695cab070a4fcff00d8d56092b34fc855b44209dfaac03b64eae0ba2d8479aa3
+Authorization: Bearer 67fae3561e16ae273bac82d8278cd78c7b0ece4bec584a8c8dbe878684823685
 Content-Type: application/json
 
 {
