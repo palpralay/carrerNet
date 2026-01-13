@@ -23,7 +23,6 @@ const Discover = () => {
     }
   }, [authState.all_profile_fetched, dispatch]);
 
-
   const filteredUsers =
     authState.allUsers?.filter((profile) => {
       if (!searchUser.trim()) return true;
@@ -94,17 +93,16 @@ const Discover = () => {
                     <p className="text-sm text-gray-500 mb-1">
                       @{profile.userId?.username || "unknown"}
                     </p>
-
                     {/* Connect Button */}
                     <button
+                    
                       onClick={() => {
-                        return router.push(
-                          `/viewProfile/${profile.userId?.username}`
-                        )
-                      }
-                      }
+                        router.push(`/viewProfile/${profile.userId?.username}`);
+                      }}
                       className="w-full mt-2 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition"
-                    >
+                      >
+                     
+                    
                       View Profile
                     </button>
                   </div>
@@ -126,9 +124,16 @@ const Discover = () => {
                     d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
                   />
                 </svg>
-                <p className="text-2xl font-medium mb-4 text-violet-800">No users found</p>
+                <p className="text-2xl font-medium mb-4 text-violet-800">
+                  No users found
+                </p>
                 <div className="flex h-1/2 justify-center ">
-                  <Image src="/images/noUser.svg" alt="no users found" width={200} height={200} />
+                  <Image
+                    src="/images/noUser.svg"
+                    alt="no users found"
+                    width={200}
+                    height={200}
+                  />
                 </div>
               </div>
             )}

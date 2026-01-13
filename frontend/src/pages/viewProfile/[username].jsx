@@ -1,6 +1,3 @@
-// frontend/src/pages/viewProfile/[username].jsx
-// FIXED VERSION with proper connection request handling
-
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import UserLayout from "@/layouts/UserLayout";
@@ -24,8 +21,9 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
   const dispatch = useDispatch();
   const { username } = router.query;
 
+
   const [profileData, setProfileData] = useState(initialProfileData);
-  const [loading, setLoading] = useState(!initialProfileData);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(ssrError);
   const [userPosts, setUserPosts] = useState([]);
 
@@ -38,11 +36,12 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
     loading: false,
   });
 
-  // Resume download state
-  const [downloadingResume, setDownloadingResume] = useState(false);
-
   // Fetch profile if not loaded via SSR
   useEffect(() => {
+    console.log("Profile Data State:", profileData);
+    console.log("Username:", username);
+    
+    // Fallback: If no profile data from SSR, try fetching client-side
     if (!profileData && !loading && username) {
       const fetchProfile = async () => {
         try {
@@ -50,10 +49,12 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
           const token = localStorage.getItem("token");
 
           if (!token) {
+            console.log("No token found in localStorage, redirecting...");
             router.push("/login");
             return;
           }
 
+          console.log("Fetching profile client-side for:", username);
           const response = await fetch(
             `${BASE_URL}/user/getUserProfileByUsername/${username}`,
             {
@@ -335,7 +336,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
     );
   };
 
-  if (loading) {
+  if (loading || (!profileData && !error)) {
     return (
       <UserLayout>
         <DashboardLayout>
@@ -617,6 +618,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
 // Keep existing getServerSideProps
 export async function getServerSideProps(context) {
   try {
+    console.log("SSR: Starting getServerSideProps for ViewProfile");
     const cookieHeader = context.req.headers.cookie || "";
     const cookies = {};
     cookieHeader.split(";").forEach((cookie) => {
@@ -627,17 +629,22 @@ export async function getServerSideProps(context) {
     });
 
     const token = cookies.token;
+    console.log("SSR: Token from cookies:", token ? "Found" : "Missing");
 
     if (!token) {
+      console.log("SSR: No token found. Returning null profile to allow client-side fallback.");
       return {
-        redirect: {
-          destination: "/login",
-          permanent: false,
+        props: {
+          initialProfileData: null,
+          ssrError: null,
+          ssrMode: false,
         },
       };
     }
 
     const username = context.params.username;
+    console.log(`SSR: Fetching profile for ${username} from ${BASE_URL}`);
+    
     const response = await fetch(
       `${BASE_URL}/user/getUserProfileByUsername/${username}`,
       {
@@ -648,14 +655,18 @@ export async function getServerSideProps(context) {
       }
     );
 
+    console.log("SSR: Backend response status:", response.status);
+
     if (!response.ok) {
       if (response.status === 401) {
+        // Token invalid? Let client handle it
         return {
-          redirect: {
-            destination: "/login",
-            permanent: false,
-          },
-        };
+           props: {
+            initialProfileData: null,
+            ssrError: "Unauthorized",
+            ssrMode: false,
+           }
+        }
       }
 
       return {
@@ -676,6 +687,7 @@ export async function getServerSideProps(context) {
       },
     };
   } catch (error) {
+    console.error("SSR Error:", error);
     return {
       props: {
         initialProfileData: null,
