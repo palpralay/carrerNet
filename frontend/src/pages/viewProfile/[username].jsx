@@ -13,6 +13,23 @@ import clientServer, {
 } from "@/redux/config/action/authAction";
 import { toast } from "sonner";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+import ResumePDF from "@/components/Resume/ResumePDF";
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  {
+    ssr: false,
+    loading: () => <span className="text-sm text-gray-500">Loading PDF...</span>,
+  }
+);
+const BlobProvider = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.BlobProvider),
+  {
+    ssr: false,
+    loading: () => <span className="text-sm text-gray-500">Loading PDF...</span>,
+  }
+);
 
 const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
   const authState = useSelector((state) => state.auth);
@@ -41,7 +58,6 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
     console.log("Profile Data State:", profileData);
     console.log("Username:", username);
     
-    // Fallback: If no profile data from SSR, try fetching client-side
     if (!profileData && !loading && username) {
       const fetchProfile = async () => {
         try {
@@ -420,6 +436,67 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
 
           {/* Connection Button */}
           {renderConnectionButton()}
+
+          {/* Resume Actions */}
+          {connectionStatus.isMe && (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 border-t border-gray-100 pt-6">
+              <BlobProvider document={<ResumePDF profileData={profileData} />}>
+                {({ blob, url, loading, error }) => (
+                  <button
+                    onClick={() => {
+                      if (url) {
+                        window.open(url, "_blank");
+                      }
+                    }}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-full border-2 border-indigo-600 text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                      />
+                    </svg>
+                    {loading ? "Preparing..." : "Create & Preview Resume"}
+                  </button>
+                )}
+              </BlobProvider>
+
+              <PDFDownloadLink
+                document={<ResumePDF profileData={profileData} />}
+                fileName={`${profileData.userId?.username || "user"}_resume.pdf`}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+              >
+                {({ blob, url, loading, error }) => (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                      />
+                    </svg>
+                    {loading ? "Generating..." : "Download Resume"}
+                  </>
+                )}
+              </PDFDownloadLink>
+            </div>
+          )}
 
           {/* Rest of profile content... */}
           {/* Current Position */}
