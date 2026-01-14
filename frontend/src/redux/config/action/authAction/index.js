@@ -327,10 +327,10 @@ export const updateProfileData = createAsyncThunk(
   }
 );
 
-// Upload profile picture
+// Upload profile picture to Cloudinary
 export const uploadProfilePicture = createAsyncThunk(
   "user/uploadProfilePicture",
-  async (formData, thunkAPI) => {
+  async (file, thunkAPI) => {
     try {
       const token = localStorage.getItem("token");
       
@@ -338,8 +338,12 @@ export const uploadProfilePicture = createAsyncThunk(
         return thunkAPI.rejectWithValue("No token available");
       }
 
+      // Create FormData and append the file with the correct field name
+      const formData = new FormData();
+      formData.append('image', file);
+
       const response = await clientServer.post(
-        "/upload_profile_picture",
+        "/api/upload/profile-picture",
         formData,
         {
           headers: {
@@ -349,7 +353,21 @@ export const uploadProfilePicture = createAsyncThunk(
         }
       );
       
-      console.log('Profile picture uploaded successfully');
+      console.log('Profile picture uploaded to Cloudinary:', response.data);
+      
+      // Update user profile with the Cloudinary URL
+      if (response.data.url) {
+        await clientServer.post(
+          "/user_update",
+          { profilePicture: response.data.url },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Upload profile picture error:', error.response?.data || error.message);

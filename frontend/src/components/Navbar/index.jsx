@@ -41,8 +41,8 @@ const Navbar = () => {
       <p
         onClick={() => router.push("/")}
         className="text-2xl font-extrabold
-                    bg-gradient-to-r from-blue-800 via-sky-500 to-yellow-500
-                    bg-[length:300%_300%]
+                    bg-linear-to-r from-blue-800 via-sky-500 to-yellow-500
+                    bg-size[300%_300%]
                     bg-clip-text text-transparent
                     animate-gradient cursor-pointer"
       >
@@ -136,7 +136,7 @@ const Navbar = () => {
       <div
         className={`${
           open ? "flex" : "hidden"
-        } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col gap-3 px-5 sm:hidden z-50`}
+        } absolute top-15 left-0 w-full bg-white shadow-md py-4 flex-col gap-3 px-5 sm:hidden z-50`}
       >
         {isLoggedIn && authState.user?.name ? (
           <>

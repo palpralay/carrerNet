@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import postsRoutes from "./routes/posts.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 
 app.use(postsRoutes);
 app.use(userRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Global error handler - must be after all routes
 app.use((err, req, res, next) => {

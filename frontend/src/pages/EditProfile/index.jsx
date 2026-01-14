@@ -203,10 +203,8 @@ const EditProfile = () => {
     setMessage({ text: '', type: '' });
 
     try {
-      const formData = new FormData();
-      formData.append('profile_picture', profilePicture);
-
-      const result = await dispatch(uploadProfilePicture(formData));
+      // Pass the file directly, the action will create FormData
+      const result = await dispatch(uploadProfilePicture(profilePicture));
       
       if (result.type.includes('fulfilled')) {
         setMessage({ text: 'Profile picture uploaded successfully!', type: 'success' });

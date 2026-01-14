@@ -16,7 +16,7 @@ export const createPost = async (req, res) => {
   console.log("req.file:", req.file);
   try {
     // Allow posts with either text body OR media (or both)
-    if (!req.body.body && !req.file) {
+    if (!req.body.body && !req.body.media && !req.file) {
       return res
         .status(400)
         .json({ message: "Post must contain text or media" });
@@ -25,11 +25,25 @@ export const createPost = async (req, res) => {
     if (!profile) {
       return res.status(400).json({ message: "Profile not found" });
     }
+    
+    // Support both Cloudinary URL and local file upload
+    let mediaUrl = req.body.media || ""; // Cloudinary URL from frontend
+    let fileType = "";
+    
+    if (req.file) {
+      // Local file upload (fallback)
+      mediaUrl = req.file.filename;
+      fileType = req.file.mimetype.split("/")[0];
+    } else if (req.body.media) {
+      // Cloudinary URL - determine file type from URL or default to image
+      fileType = req.body.fileType || "image";
+    }
+    
     const post = new Post({
       userId: user._id,
       body: req.body.body || "",
-      media: req.file != undefined ? req.file.filename : "",
-      fileType: req.file != undefined ? req.file.mimetype.split("/")[0] : "",
+      media: mediaUrl,
+      fileType: fileType,
     });
     await post.save();
     return res.status(201).json({ message: "Post created successfully", post });

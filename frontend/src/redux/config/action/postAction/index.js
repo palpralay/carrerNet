@@ -16,18 +16,56 @@ export const getAllPosts = createAsyncThunk(
   }
 );
 
+// Upload image to Cloudinary
+export const uploadPostImage = createAsyncThunk(
+  "posts/uploadPostImage",
+  async (file, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        return thunkAPI.rejectWithValue("No token available");
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await clientServer.post("/api/upload/post-image", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to upload image"
+      );
+    }
+  }
+);
+
 export const createPost = createAsyncThunk(
   "posts/createPost",
   async (postData, thunkAPI) => {
     try {
       const { file, body } = postData;
-      const formData = new FormData();
-      if (file) formData.append("media", file);
-      if (body) formData.append("body", body);
+      let mediaUrl = null;
 
-      const response = await clientServer.post("/post", formData, {
+      // If there's a file, upload to Cloudinary first
+      if (file) {
+        const uploadResult = await thunkAPI.dispatch(uploadPostImage(file)).unwrap();
+        mediaUrl = uploadResult.url;
+      }
+
+      // Create post with Cloudinary URL
+      const response = await clientServer.post("/post", {
+        body: body,
+        media: mediaUrl
+      }, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
