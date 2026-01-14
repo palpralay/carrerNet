@@ -39,7 +39,7 @@ const Navbar = () => {
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 bg-white relative">
       <p
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/dashboard")}
         className="text-2xl font-extrabold
                     bg-linear-to-r from-blue-800 via-sky-500 to-yellow-500
                     bg-size[300%_300%]
