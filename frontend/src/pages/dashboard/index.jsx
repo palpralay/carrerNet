@@ -336,9 +336,11 @@ const Dashboard = () => {
                     <div className="flex items-center">
                       <Image
                         onClick={() => {
-                          router.push(
-                            `/viewProfile/${authState.user.username}`
-                          );
+                          if (post.userId?.username) {
+                            router.push(
+                              `/viewProfile/${post.userId.username}`
+                            );
+                          }
                         }}
                         src={
                           post.userId?.profilePicture &&
@@ -357,10 +359,28 @@ const Dashboard = () => {
                         height={48}
                       />
                       <div className="ml-3">
-                        <p className="font-semibold text-gray-900">
+                        <p 
+                          onClick={() => {
+                            if (post.userId?.username) {
+                              router.push(
+                                `/viewProfile/${post.userId.username}`
+                              );
+                            }
+                          }}
+                          className="font-semibold text-gray-900 cursor-pointer hover:text-indigo-600"
+                        >
                           {post.userId?.name || "Unknown User"}
                         </p>
-                        <p className="text-gray-400">
+                        <p 
+                          onClick={() => {
+                            if (post.userId?.username) {
+                              router.push(
+                                `/viewProfile/${post.userId.username}`
+                              );
+                            }
+                          }}
+                          className="text-gray-400 cursor-pointer hover:text-indigo-600"
+                        >
                           @{post.userId?.username || "unknown"}
                         </p>
                         <p className="text-sm text-gray-500">
