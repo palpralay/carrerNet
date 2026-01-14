@@ -1,12 +1,17 @@
 import axios from "axios";
 
-export const BASE_URL = "https://careernet-hp1x.onrender.com";
+// Use environment variable for BASE_URL with fallback
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://careernet-hp1x.onrender.com";
 
 // export const BASE_URL = "http://127.0.0.1:9000";
 
 
 export const clientServer = axios.create({
   baseURL: BASE_URL,
+  timeout: 30000, // 30 second timeout for Vercel
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // Add request interceptor to attach token to all requests
