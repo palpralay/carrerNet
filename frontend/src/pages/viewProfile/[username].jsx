@@ -415,7 +415,9 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                   src={
                     profileData.userId?.profilePicture &&
                     profileData.userId.profilePicture !== "default.jpg"
-                      ? `${BASE_URL}/${profileData.userId.profilePicture}`
+                      ? (profileData.userId.profilePicture.startsWith('http') 
+                          ? profileData.userId.profilePicture 
+                          : `${BASE_URL}/${profileData.userId.profilePicture}`)
                       : "/images/avatar.png"
                   }
                   alt={profileData.userId?.name || "User"}
@@ -661,7 +663,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                   <p className="text-gray-800 mb-4">{post.body}</p>
                   {post.media && (
                     <img
-                      src={`${BASE_URL}/uploads/${post.media}`}
+                      src={post.media.startsWith('http') ? post.media : `${BASE_URL}/uploads/${post.media}`}
                       alt="post"
                       className="w-full h-auto rounded-lg mb-4"
                       width={640}

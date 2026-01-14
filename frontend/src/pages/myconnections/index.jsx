@@ -100,7 +100,9 @@ const MyConnections = () => {
           <Image
             src={
               user.profilePicture && user.profilePicture !== "default.jpg"
-                ? `${BASE_URL}/${user.profilePicture}`
+                ? (user.profilePicture.startsWith('http') 
+                    ? user.profilePicture 
+                    : `${BASE_URL}/${user.profilePicture}`)
                 : "/images/avatar.png"
             }
             alt={user.name || "User"}

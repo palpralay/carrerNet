@@ -194,7 +194,9 @@ const Dashboard = () => {
                 src={
                   authState.user?.profilePicture &&
                   authState.user.profilePicture !== "default.jpg"
-                    ? `${BASE_URL}/${authState.user.profilePicture}`
+                    ? (authState.user.profilePicture.startsWith('http') 
+                        ? authState.user.profilePicture 
+                        : `${BASE_URL}/${authState.user.profilePicture}`)
                     : "/images/avatar.png"
                 }
                 alt="profile"
@@ -341,7 +343,9 @@ const Dashboard = () => {
                         src={
                           post.userId?.profilePicture &&
                           post.userId.profilePicture !== "default.jpg"
-                            ? `${BASE_URL}/${post.userId.profilePicture}`
+                            ? (post.userId.profilePicture.startsWith('http') 
+                                ? post.userId.profilePicture 
+                                : `${BASE_URL}/${post.userId.profilePicture}`)
                             : "/images/avatar.png"
                         }
                         alt="Author"
@@ -406,12 +410,12 @@ const Dashboard = () => {
                   {/* Post Media */}
                   {post.media && (
                     <Image
-                      src={`${BASE_URL}/uploads/${post.media}`}
+                      src={post.media.startsWith('http') ? post.media : `${BASE_URL}/uploads/${post.media}`}
                       alt="Post content"
                       className="w-full object-cover h-96 rounded-lg border border-gray-200"
                       unoptimized={true}
                       onError={(e) => {
-                        console.error('Image load error for:', `${BASE_URL}/uploads/${post.media}`);
+                        console.error('Image load error for:', post.media);
                         e.target.style.display = "none";
                       }}
                       width={640}
@@ -561,7 +565,9 @@ const Dashboard = () => {
                           src={
                             postComment.userId?.profilePicture &&
                             postComment.userId.profilePicture !== "default.jpg"
-                              ? `${BASE_URL}/${postComment.userId.profilePicture}`
+                              ? (postComment.userId.profilePicture.startsWith('http') 
+                                  ? postComment.userId.profilePicture 
+                                  : `${BASE_URL}/${postComment.userId.profilePicture}`)
                               : "/images/avatar.png"
                           }
                           alt="Commenter"

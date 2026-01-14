@@ -64,7 +64,9 @@ const Navbar = () => {
                 src={
                   authState.user.profilePicture &&
                   authState.user.profilePicture !== "default.jpg"
-                    ? `${BASE_URL}/${authState.user.profilePicture}`
+                    ? (authState.user.profilePicture.startsWith('http') 
+                        ? authState.user.profilePicture 
+                        : `${BASE_URL}/${authState.user.profilePicture}`)
                     : "/images/avatar.png"
                 }
                 alt={authState.user.name || "User"}

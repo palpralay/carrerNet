@@ -132,7 +132,7 @@ export const uploadProfilePicture = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const user = req.user;
-    const { username, email, name } = req.body;
+    const { username, email, name, profilePicture } = req.body;
 
     if (username || email) {
       const existingUser = await User.findOne({
@@ -149,12 +149,19 @@ export const updateUserProfile = async (req, res) => {
     if (username) user.username = username;
     if (email) user.email = email;
     if (name) user.name = name;
+    if (profilePicture) user.profilePicture = profilePicture;
 
     await user.save();
 
     return res
       .status(200)
-      .json({ message: "User profile updated successfully" });
+      .json({ message: "User profile updated successfully", user: {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture
+      } });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }

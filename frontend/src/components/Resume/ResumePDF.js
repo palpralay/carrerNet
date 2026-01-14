@@ -128,7 +128,9 @@ const ResumePDF = ({ profileData }) => {
   const { userId, bio, currentPost, pastWork, education } = profileData;
 
   const profileImageUrl = userId?.profilePicture && userId.profilePicture !== 'default.jpg'
-    ? `${BASE_URL}/${userId.profilePicture}`
+    ? (userId.profilePicture.startsWith('http') 
+        ? userId.profilePicture 
+        : `${BASE_URL}/${userId.profilePicture}`)
     : null; // You might want to provide a publicly accessible URL for a default avatar if needed
 
   return (

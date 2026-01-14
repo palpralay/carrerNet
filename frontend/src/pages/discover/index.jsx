@@ -72,7 +72,9 @@ const Discover = () => {
                       src={
                         profile.userId?.profilePicture &&
                         profile.userId.profilePicture !== "default.jpg"
-                          ? `${BASE_URL}/${profile.userId.profilePicture}`
+                          ? (profile.userId.profilePicture.startsWith('http') 
+                              ? profile.userId.profilePicture 
+                              : `${BASE_URL}/${profile.userId.profilePicture}`)
                           : "/images/avatar.png"
                       }
                       alt={profile.userId?.name || "User"}

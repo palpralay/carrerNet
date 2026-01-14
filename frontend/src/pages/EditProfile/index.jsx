@@ -62,7 +62,10 @@ const EditProfile = () => {
           
           // Set profile picture preview
           if (user.profilePicture && user.profilePicture !== 'default.jpg') {
-            setProfilePicturePreview(`${BASE_URL}/${user.profilePicture}`);
+            const imageUrl = user.profilePicture.startsWith('http') 
+              ? user.profilePicture 
+              : `${BASE_URL}/${user.profilePicture}`;
+            setProfilePicturePreview(imageUrl);
           }
         }
 
