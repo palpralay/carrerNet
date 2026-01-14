@@ -16,6 +16,7 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
+    unoptimized: true, // Disable image optimization for local development
   },
 };
 

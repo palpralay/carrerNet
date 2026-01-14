@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser, getAboutUser } from "@/redux/config/action/authAction";
 import Image from "next/image";
+import { BASE_URL } from "@/redux/config";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);

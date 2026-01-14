@@ -8,7 +8,10 @@ import {
   getConnectionRequests,
   getReceivedRequests,
   getMyConnections,
-  respondToConnectionRequest
+  respondToConnectionRequest,
+  updateUserInfo,
+  updateProfileData,
+  uploadProfilePicture
 } from "../../action/authAction/index.js";
 import { act } from "react";
 
@@ -208,6 +211,57 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload || "Failed to respond to request";
+      })
+
+      // UPDATE USER INFO
+      .addCase(updateUserInfo.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+      })
+      .addCase(updateUserInfo.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.message = "User info updated successfully";
+      })
+      .addCase(updateUserInfo.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload || "Failed to update user info";
+      })
+
+      // UPDATE PROFILE DATA
+      .addCase(updateProfileData.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+      })
+      .addCase(updateProfileData.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.message = "Profile updated successfully";
+      })
+      .addCase(updateProfileData.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload || "Failed to update profile";
+      })
+
+      // UPLOAD PROFILE PICTURE
+      .addCase(uploadProfilePicture.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+      })
+      .addCase(uploadProfilePicture.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.message = "Profile picture uploaded successfully";
+      })
+      .addCase(uploadProfilePicture.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload || "Failed to upload profile picture";
       })
 
       // LOGOUT

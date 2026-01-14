@@ -263,6 +263,109 @@ export const respondToConnectionRequest = createAsyncThunk(
   }
 );
 
+// Update user basic info (name, username, email)
+export const updateUserInfo = createAsyncThunk(
+  "user/updateUserInfo",
+  async (userData, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        return thunkAPI.rejectWithValue("No token available");
+      }
+
+      const response = await clientServer.post(
+        "/user_update",
+        userData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      console.log('User info updated successfully');
+      return response.data;
+    } catch (error) {
+      console.error('Update user info error:', error.response?.data || error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to update user info"
+      );
+    }
+  }
+);
+
+// Update profile data (bio, currentPost, pastWork, education)
+export const updateProfileData = createAsyncThunk(
+  "user/updateProfileData",
+  async (profileData, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        return thunkAPI.rejectWithValue("No token available");
+      }
+
+      const response = await clientServer.post(
+        "/update_profile_data",
+        profileData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      console.log('Profile data updated successfully');
+      return response.data;
+    } catch (error) {
+      console.error('Update profile data error:', error.response?.data || error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to update profile data"
+      );
+    }
+  }
+);
+
+// Upload profile picture
+export const uploadProfilePicture = createAsyncThunk(
+  "user/uploadProfilePicture",
+  async (formData, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        return thunkAPI.rejectWithValue("No token available");
+      }
+
+      const response = await clientServer.post(
+        "/upload_profile_picture",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      
+      console.log('Profile picture uploaded successfully');
+      return response.data;
+    } catch (error) {
+      console.error('Upload profile picture error:', error.response?.data || error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to upload profile picture"
+      );
+    }
+  }
+)
+
+
+
+
+
+
+
 export const logoutUser = createAsyncThunk(
   "user/logout",
   async (_, thunkAPI) => {

@@ -293,16 +293,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Debug Panel - Remove this in production */}
-          {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-            <p className="font-semibold mb-2">🔍 Debug Info:</p>
-            <p>Posts Count: {postState.posts?.length || 0}</p>
-            <p>Is Loading: {postState.isLoading ? "Yes" : "No"}</p>
-            <p>Post Fetched: {postState.postFetch ? "Yes" : "No"}</p>
-            <p>Is Error: {postState.isError ? "Yes" : "No"}</p>
-            {postState.message && <p>Message: {postState.message}</p>}
-          </div> */}
-
           {/* Posts Feed */}
           <div className="space-y-4">
             {postState.isLoading && !postState.posts?.length ? (
@@ -416,11 +406,12 @@ const Dashboard = () => {
                   {/* Post Media */}
                   {post.media && (
                     <Image
-                      src={`${BASE_URL}/${post.media}`}
+                      src={`${BASE_URL}/uploads/${post.media}`}
                       alt="Post content"
                       className="w-full object-cover h-96 rounded-lg border border-gray-200"
                       unoptimized={true}
                       onError={(e) => {
+                        console.error('Image load error for:', `${BASE_URL}/uploads/${post.media}`);
                         e.target.style.display = "none";
                       }}
                       width={640}

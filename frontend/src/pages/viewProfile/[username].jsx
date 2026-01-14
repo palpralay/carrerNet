@@ -408,7 +408,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
         <div className="bg-white rounded-xl w-full shadow-md border border-gray-200 p-8">
           {/* Cover and Profile Picture */}
           <div className="max-w-3xl mx-auto relative mb-16">
-            <div className="h-40 bg-amber-500 rounded-xl shadow-lg border border-amber-200"></div>
+            <div className="h-50 bg-amber-500 rounded-xl shadow-lg border border-amber-200"></div>
             <div className="absolute left-1/2 -bottom-16 transform -translate-x-1/2">
               <div className="p-1 rounded-full bg-linear-to-r from-pink-500 via-purple-500 to-indigo-500 shadow-xl">
                 <Image
@@ -424,6 +424,8 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                   height={128}
                   unoptimized
                 />
+                
+            
               </div>
             </div>
           </div>
@@ -659,7 +661,7 @@ const ViewProfile = ({ initialProfileData, ssrError, ssrMode }) => {
                   <p className="text-gray-800 mb-4">{post.body}</p>
                   {post.media && (
                     <img
-                      src={`${BASE_URL}/${post.media}`}
+                      src={`${BASE_URL}/uploads/${post.media}`}
                       alt="post"
                       className="w-full h-auto rounded-lg mb-4"
                       width={640}
