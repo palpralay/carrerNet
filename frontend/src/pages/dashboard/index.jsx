@@ -51,7 +51,7 @@ const Dashboard = () => {
     if (!authState.loggedIn || !authState.profileFetched) {
       dispatch(getAboutUser({ token }));
     }
-  }, []);
+  }, [authState.all_profile_fetched, authState.loggedIn, authState.profileFetched, dispatch, router]);
 
   useEffect(() => {
     if (file) {
@@ -536,7 +536,7 @@ const Dashboard = () => {
                 flex items-center justify-center"
           >
             <div
-              className="w-[500px] h-[500px] rounded-2xl bg-white flex flex-col overflow-hidden"
+              className="w-125 h-125 rounded-2xl bg-white flex flex-col overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Comments Header */}
@@ -571,7 +571,7 @@ const Dashboard = () => {
                               : "/images/avatar.png"
                           }
                           alt="Commenter"
-                          className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+                          className="h-8 w-8 rounded-full object-cover shrink-0"
                           onError={(e) => {
                             e.target.src = "/images/avatar.png";
                           }}
